@@ -1,4 +1,7 @@
 package dev.gerasimova;
+
+import java.util.Set;
+
 /**
  * Класс для работы со строками.
  * Содержит алгоритм подсчета гласных и согласных букв в строке,
@@ -13,12 +16,13 @@ public class StringProcessor {
      */
     public static void countVowelsAndConsonants (String str) {
 
-        if (isStringEmpty(str)) return;
-
         System.out.println("Подсчет гласных и согласных букв в строке: "+ str);
 
-        String vowels = "aeyuioаоуэиыеёюя";
-        String consonants = "qwrtpsdfghjklzxcvbnmйцкнгшщзхъфвпрлджчсмтьб";
+        Set<Character> vowels = Set.of('a', 'e', 'y', 'u', 'i', 'o',
+                'а', 'о', 'у', 'э', 'и', 'ы', 'е', 'ё', 'ю', 'я');
+
+        Set<Character> consonants = Set.of('q', 'w', 'r', 't', 'p', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'z', 'x', 'c', 'v', 'b', 'n', 'm',
+                'й', 'ц', 'к', 'н', 'г', 'ш', 'щ', 'з', 'х', 'ъ', 'ф', 'в', 'п', 'р', 'л', 'д', 'ж', 'ч', 'с', 'м', 'т', 'ь', 'б');
 
         int countVowels = 0;
         int countConsonants = 0;
@@ -26,10 +30,10 @@ public class StringProcessor {
         str = str.toLowerCase();
 
         for (char c: str.toCharArray()) {
-            if (consonants.indexOf(c)!= -1) {
+            if (consonants.contains(c)) {
                 countConsonants+=1;
             }
-            if (vowels.indexOf(c)!= -1) {
+            if (vowels.contains(c)) {
                 countVowels+=1;
             }
         }
@@ -46,7 +50,6 @@ public class StringProcessor {
      */
     public static void wordCount (String str) {
 
-        if (isStringEmpty(str)) return;
         System.out.println("Подсчет слов в строке: "+ str);
 
         int countWord;
@@ -63,7 +66,7 @@ public class StringProcessor {
      * @return возвращает true/false в зависимости от результата проверки.
      */
     public static boolean isStringEmpty(String str) {
-        if (str == null || str.trim().isEmpty()) {
+        if (str == null || str.isBlank()) {
             System.out.println("Ошибка: строка пуста или null!");
             return true;
         }
