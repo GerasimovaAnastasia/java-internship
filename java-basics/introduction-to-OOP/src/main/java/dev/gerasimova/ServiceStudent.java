@@ -56,15 +56,6 @@ public class ServiceStudent {
                 .orElseThrow();
     }
     /**
-     * Выводит информацию о лучшем студенте.
-     * <p>
-     * @param student - студент с лучшим баллом.
-     */
-    public static void printBestStudent(Student student) {
-        System.out.printf("Студент с максимальным средним баллом: %s, оценка: %.1f%n",
-                student.getName(), student.getAverageGrade());
-    }
-    /**
      * Демонстрирует все этапы работы со студентами.
      * Создает список, выводит список студентов, находит и показывает лучшего студента.
      */
@@ -72,7 +63,9 @@ public class ServiceStudent {
         List<Student> students = createSampleStudents();
         printAllStudents(students);
         Student bestStudent = findStudentWithMaxGrade(students);
-        printBestStudent(bestStudent);
+
+        System.out.printf("Студент с максимальным средним баллом: %s, оценка: %.1f%n",
+                bestStudent.getName(), bestStudent.getAverageGrade());
     }
     /**
      * Проверяет список студентов на null и пустоту.
