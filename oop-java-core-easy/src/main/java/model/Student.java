@@ -5,12 +5,11 @@ import java.util.Objects;
 /**
  * Класс, описывающий сущность Student.
  * Представляет студента учебного заведения с именем, возрастом и средним баллом.
+ * Наследует от класса {@link Person} и добавляет средний балл студента.
  */
-public class Student {
-
-    private String name;
-    private int age;
+public class Student extends Person {
     private double averageGrade;
+
 
     /**
      * Конструктор по умолчанию.
@@ -25,9 +24,10 @@ public class Student {
      */
     public Student(String name, int age) {
 
-        this.name = name;
-        this.age = age;
+        setName(name);
+        setAge(age);
     }
+
     /**
      * Полный конструктор со всеми полями класса Student.
      * @param name имя студента (не может быть null или пустым)
@@ -36,8 +36,8 @@ public class Student {
      * @throws IllegalArgumentException если средний балл не прошел валидацию
      */
     public Student(String name, int age, double averageGrade) {
-        this.name = name;
-        this.age = age;
+        setName(name);
+        setAge(age);
         setAverageGrade(averageGrade);
     }
 
@@ -50,7 +50,7 @@ public class Student {
         return averageGrade;
     }
 
-     /**
+    /**
      * Устанавливает средний балл студента с валидацией.
      *
      * @param averageGrade средний балл студента (от 0.0 до 10.0 включительно)
@@ -65,46 +65,6 @@ public class Student {
         } else {
             throw new IllegalArgumentException("Балл должен быть в пределах от 0 до 10 включительно!");
         }
-    }
-    /**
-     * Возвращает имя человека.
-     *
-     * @return имя человека
-     */
-    public String getName() {
-        return name;
-    }
-    /**
-     * Устанавливает имя человека.
-     *
-     * @param name имя человека
-     * @throws IllegalArgumentException если имя равно null или пустое
-     */
-    public void setName(String name) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("Имя не может быть null или пустым");
-        }
-        this.name = name;
-    }
-    /**
-     * Возвращает возраст человека.
-     *
-     * @return возраст человека
-     */
-    public int getAge() {
-        return age;
-    }
-    /**
-     * Устанавливает возраст человека.
-     *
-     * @param age возраст человека
-     * @throws IllegalArgumentException если возраст отрицательный
-     */
-    public void setAge(int age) {
-        if (age < 0) {
-            throw new IllegalArgumentException("Возраст не может быть отрицательным");
-        }
-        this.age = age;
     }
 
     /**
@@ -137,12 +97,12 @@ public class Student {
 
     /**
      * Выводит информацию о студенте в консоль.
+     * Демонстрирует переопределение метода для полиморфизма.
      */
     @Override
-    public String toString() {
-        return String.format("Студент: %s, возраст: %d, средний балл: %.1f",
-                name, age, averageGrade);
+    public void introduce() {
+        System.out.printf("Студент: Имя: %s, Возраст: %d, Средний балл: %.1f\n", getName(),
+                getAge(), averageGrade);
     }
-
 
 }
