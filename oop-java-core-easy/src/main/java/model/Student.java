@@ -1,5 +1,7 @@
 package model;
 
+import java.util.Objects;
+
 /**
  * Класс, описывающий сущность Student.
  * Представляет студента учебного заведения с именем, возрастом и средним баллом.
@@ -104,6 +106,35 @@ public class Student {
         }
         this.age = age;
     }
+
+    /**
+     * Сравнивает этого студента с указанным объектом.
+     * Студенты считаются равными, если у них совпадают имя и возраст.
+     * @param o - объект для сравнения.
+     * @return true если объекты равны, false в противном случае
+     * @see #hashCode()
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Student student = (Student) o;
+        return getAge() == student.getAge() && Objects.equals(getName(), student.getName());
+    }
+
+    /**
+     * Возвращает хэш-код для этого студента.
+     * Хэш-код рассчитывается на основе имени и возраста в соответствии с контрактом
+     * {@link #equals(Object)}.
+     *
+     * @return хэш-код объекта
+     * @see Object#hashCode()
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(getName(), getAge());
+    }
+
     /**
      * Выводит информацию о студенте в консоль.
      */

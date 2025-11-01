@@ -1,6 +1,6 @@
 import test.EncapsulationTest;
 import test.ConstructorTest;
-
+import test.EqualsHashCodeTest;
 import test.utils.TestRunnerUtil;
 
 import java.util.LinkedHashMap;
@@ -13,6 +13,7 @@ public class Main {
 
         testResults.put("1. Инкапсуляция и валидация", EncapsulationTest.runEncapsulationTests());
         testResults.put("2. Перегрузка конструкторов", ConstructorTest.runConstructorTests());
+        testResults.put("3. equals() и hashCode()", EqualsHashCodeTest.runEqualsHashCodeTests());
 
         TestRunnerUtil.printFinalReport(testResults);
     }
