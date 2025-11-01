@@ -5,6 +5,8 @@ import model.Student;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Сервисный класс для работы с сущностью Student.
@@ -15,7 +17,7 @@ import java.util.Comparator;
  * @see StudentNotFoundException
  */
 public class ServiceStudent {
-
+    private final Map<String, Student> students = new HashMap<>();
     /**
      * Создает список студентов и заполняет тестовыми данными.
      * <p>
@@ -37,6 +39,55 @@ public class ServiceStudent {
         list.add(student5);
 
         return list;
+    }
+    /**
+     * Добавляет студента в хранилище.
+     *
+     * @param studentId уникальный идентификатор студента
+     * @param student объект студента для добавления
+     * @throws IllegalArgumentException если studentId или student равны null
+     */
+    public void addStudent(String studentId, Student student) {
+        if (studentId == null || student == null) {
+            throw new IllegalArgumentException("Id студента и student не могут быть null");
+        }
+        students.put(studentId, student);
+        System.out.println("Студент добавлен: " + studentId);
+    }
+    /**
+     * Находит студента по идентификатору.
+     *
+     * @param studentId идентификатор студента для поиска
+     * @return найденный объект Student
+     * @throws StudentNotFoundException если студент с указанным ID не найден
+     * @throws IllegalArgumentException если studentId равен null
+     */
+    public Student findStudent(String studentId) {
+        if (studentId == null) {
+            throw new IllegalArgumentException("Id студента не может быть null");
+        }
+        Student student = students.get(studentId);
+        if (student == null) {
+            throw new StudentNotFoundException(studentId);
+        }
+        return student;
+    }
+    /**
+     * Удаляет студента по идентификатору.
+     *
+     * @param studentId идентификатор студента для удаления
+     * @throws StudentNotFoundException если студент с указанным ID не найден
+     * @throws IllegalArgumentException если studentId равен null
+     */
+    public void removeStudent(String studentId) {
+        if (studentId == null) {
+            throw new IllegalArgumentException("Id студента не может быть null");
+        }
+        Student removed = students.remove(studentId);
+        if (removed == null) {
+            throw new StudentNotFoundException(studentId);
+        }
+        System.out.println("Студент удален: " + studentId);
     }
 
     /**
@@ -63,5 +114,12 @@ public class ServiceStudent {
                 .thenComparing(Comparator.comparing(Student::getAverageGrade).reversed()));
         return list;
     }
-
+    /**
+     * Возвращает карту всех студентов.
+     *
+     * @return карта студентов (ключ - идентификатор, значение - студент)
+     */
+    public Map<String, Student> getStudents() {
+        return students;
+    }
 }
