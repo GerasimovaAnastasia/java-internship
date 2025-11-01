@@ -11,6 +11,22 @@ public class Student {
     private double averageGrade;
 
     /**
+     * Конструктор по умолчанию.
+     * Создает объект Student с незаполненными полями.
+     */
+    public Student() {}
+
+    /**
+     * Конструктор с полями: имя и возраст студента.
+     * @param name - имя студента.
+     * @param age - возраст студента.
+     */
+    public Student(String name, int age) {
+
+        this.name = name;
+        this.age = age;
+    }
+    /**
      * Полный конструктор со всеми полями класса Student.
      * @param name имя студента (не может быть null или пустым)
      * @param age возраст студента (должен быть положительным числом)

@@ -1,4 +1,5 @@
 import test.EncapsulationTest;
+import test.ConstructorTest;
 
 import test.utils.TestRunnerUtil;
 
@@ -11,6 +12,7 @@ public class Main {
         Map<String, Boolean> testResults = new LinkedHashMap<>();
 
         testResults.put("1. Инкапсуляция и валидация", EncapsulationTest.runEncapsulationTests());
+        testResults.put("2. Перегрузка конструкторов", ConstructorTest.runConstructorTests());
 
         TestRunnerUtil.printFinalReport(testResults);
     }
