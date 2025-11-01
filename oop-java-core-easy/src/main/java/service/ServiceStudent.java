@@ -3,9 +3,15 @@ package service;
 import exceptions.StudentNotFoundException;
 import model.Student;
 
+import java.io.BufferedReader;
+import java.io.PrintWriter;
+import java.io.IOException;
+import java.io.FileWriter;
+import java.io.FileReader;
+import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -129,6 +135,76 @@ public class ServiceStudent {
                 .mapToDouble(Student::getAverageGrade)
                 .average()
                 .orElse(0.0));
+    }
+    /**
+     * Читает студентов из файла.
+     * Каждая строка файла должна содержать данные в формате: "имя, возраст, средний_балл"
+     *
+     * @param filePath путь к файлу с данными студентов
+     * @return список студентов, прочитанных из файла
+     * @throws IllegalArgumentException если filePath равен null или пустой
+     */
+    public static List<Student> readFromFileStudents(String filePath) {
+        if (filePath == null || filePath.isBlank()) {
+            throw new IllegalArgumentException("filePath не может быть null или пустым");
+        }
+        List<Student> students = new ArrayList<>();
+
+        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+
+            String line;
+            while ((line = reader.readLine()) != null) {
+                Student student = parseStudent(line);
+                if (student != null) {
+                    students.add(student);
+                }
+            }
+
+        } catch (IOException e) {
+            System.out.println("Ошибка загрузки студентов: " + e.getMessage());
+        }
+        return students;
+
+    }
+    /**
+     * Парсит строку с данными студента.
+     * Ожидает формат: "имя, возраст, средний_балл"
+     *
+     * @param line строка для парсингa
+     * @return объект Student или null если строка некорректна
+     */
+    private static Student parseStudent(String line) {
+        try {
+
+            String[] parts = line.split(",");
+            String name = parts[0].trim();
+            int age = Integer.parseInt(parts[1].trim());
+            double grade = Double.parseDouble(parts[2].trim());
+
+            return new Student(name, age, grade);
+
+        } catch (Exception e) {
+            System.out.println("Ошибка парсинга строки: " + line);
+            return null;
+        }
+    }
+    /**
+     * Создает тестовый файл с данными студентов.
+     *
+     * @param filename имя файла для создания
+     * @throws IllegalArgumentException если filename равен null или пустой
+     */
+    public static void createTestFile(String filename) {
+        if (filename == null || filename.isBlank()) {
+            throw new IllegalArgumentException("filename не может быть null или пустым");
+        }
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            writer.println("Maria,20,4.8");
+            writer.println("Alex,21,4.5");
+            writer.println("John,22,4.9");
+        } catch (IOException e) {
+            System.out.println("Ошибка создания тестового файла");
+        }
     }
     /**
      * Возвращает карту всех студентов.

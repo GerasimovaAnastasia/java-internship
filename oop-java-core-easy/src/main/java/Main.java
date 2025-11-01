@@ -7,6 +7,7 @@ import test.InheritancePolymorphismTest;
 import test.InterfaceAbstractTest;
 import test.HashMapTest;
 import test.StreamApiTest;
+import test.ExceptionHandlingTest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,6 +24,7 @@ public class Main {
         testResults.put("6. Интерфейсы и абстрактные классы", InterfaceAbstractTest.runInterfaceAbstractTests());
         testResults.put("7. Работа с HashMap", HashMapTest.runHashMapTests());
         testResults.put("8. Stream API", StreamApiTest.runStreamApiTests());
+        testResults.put("9. Обработка исключений", ExceptionHandlingTest.runExceptionHandlingTests());
 
         TestRunnerUtil.printFinalReport(testResults);
     }
