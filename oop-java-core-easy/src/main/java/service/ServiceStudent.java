@@ -115,6 +115,22 @@ public class ServiceStudent {
         return list;
     }
     /**
+     * Находит средний балл студентов старше 20 лет, чьи имена начинаются на букву 'A'.
+     * Использует Stream API для фильтрации и вычислений.
+     *
+     * @param students список студентов для анализа
+     * @return средний балл студентов или 0.0 если таких студентов нет
+     * @throws IllegalArgumentException если список студентов null или пустой
+     */
+    public static double findAverageGradeSpecificStudents(ArrayList<Student> students) {
+        validateStudentList(students);
+        return (students.stream()
+                .filter(student -> student.getAge() > 20 && student.getName().startsWith("A"))
+                .mapToDouble(Student::getAverageGrade)
+                .average()
+                .orElse(0.0));
+    }
+    /**
      * Возвращает карту всех студентов.
      *
      * @return карта студентов (ключ - идентификатор, значение - студент)
