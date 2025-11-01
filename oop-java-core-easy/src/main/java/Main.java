@@ -8,6 +8,7 @@ import test.InterfaceAbstractTest;
 import test.HashMapTest;
 import test.StreamApiTest;
 import test.ExceptionHandlingTest;
+import test.CustomExceptionTest;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ public class Main {
         testResults.put("7. Работа с HashMap", HashMapTest.runHashMapTests());
         testResults.put("8. Stream API", StreamApiTest.runStreamApiTests());
         testResults.put("9. Обработка исключений", ExceptionHandlingTest.runExceptionHandlingTests());
+        testResults.put("10. Собственное исключение", CustomExceptionTest.runCustomExceptionTests());
 
         TestRunnerUtil.printFinalReport(testResults);
     }
