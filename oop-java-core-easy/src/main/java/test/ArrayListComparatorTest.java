@@ -4,8 +4,8 @@ import model.Student;
 import service.ServiceStudent;
 import test.utils.TestMethod;
 import test.utils.TestRunnerUtil;
+import java.util.List;
 
-import java.util.ArrayList;
 /**
  * Тестовый класс для проверки функциональности ArrayList и Comparator.
  * Содержит тесты для проверки корректности сортировки студентов.
@@ -48,13 +48,13 @@ public final class ArrayListComparatorTest {
      * и среднему баллу (по убыванию) для студентов с одинаковыми именами.
      *
      * @return true если сортировка выполнена корректно, false в противном случае
-     * @see ServiceStudent#sortStudentsList(ArrayList)
+     * @see ServiceStudent#sortStudentsList(List)
      * @see ServiceStudent#createSampleStudents()
      */
     public static boolean isCorrectlySorted() {
 
-        ArrayList<Student> studentList = ServiceStudent.createSampleStudents();
-        ArrayList<Student> sortedList = ServiceStudent.sortStudentsList(studentList);
+        List<Student> studentList = ServiceStudent.createSampleStudents();
+        List<Student> sortedList = ServiceStudent.sortStudentsList(studentList);
         for (int i = 0; i < sortedList.size() - 1; i++) {
             Student st1 = sortedList.get(i);
             Student st2 = sortedList.get(i + 1);

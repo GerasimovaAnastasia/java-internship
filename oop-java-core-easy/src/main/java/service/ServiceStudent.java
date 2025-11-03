@@ -29,14 +29,14 @@ public class ServiceStudent {
      * <p>
      * @return новый список студентов.
      */
-    public static ArrayList<Student> createSampleStudents() {
+    public static List<Student> createSampleStudents() {
 
         Student student1 = new Student("Maria", 20, 4.8);
         Student student2 = new Student("Alex", 21, 4.6);
         Student student3 = new Student("Alex", 20, 4.5);
         Student student4 = new Student("Elena", 20, 4.9);
         Student student5 = new Student("John", 21, 4.3);
-        ArrayList<Student> list = new ArrayList<>();
+        List<Student> list = new ArrayList<>();
 
         list.add(student1);
         list.add(student2);
@@ -54,7 +54,7 @@ public class ServiceStudent {
      * @throws IllegalArgumentException если studentId или student равны null
      */
     public void addStudent(String studentId, Student student) {
-        if (studentId == null || student == null) {
+        if (studentId == null || studentId.isBlank() || student == null) {
             throw new IllegalArgumentException("Id студента и student не могут быть null");
         }
         students.put(studentId, student);
@@ -69,8 +69,8 @@ public class ServiceStudent {
      * @throws IllegalArgumentException если studentId равен null
      */
     public Student findStudent(String studentId) {
-        if (studentId == null) {
-            throw new IllegalArgumentException("Id студента не может быть null");
+        if (studentId == null || studentId.isBlank()) {
+            throw new IllegalArgumentException("Id студента не может быть null или пустой строкой");
         }
         Student student = students.get(studentId);
         if (student == null) {
@@ -83,11 +83,11 @@ public class ServiceStudent {
      *
      * @param studentId идентификатор студента для удаления
      * @throws StudentNotFoundException если студент с указанным ID не найден
-     * @throws IllegalArgumentException если studentId равен null
+     * @throws IllegalArgumentException если studentId равен null или пустая строка
      */
     public void removeStudent(String studentId) {
-        if (studentId == null) {
-            throw new IllegalArgumentException("Id студента не может быть null");
+        if (studentId == null || studentId.isBlank()) {
+            throw new IllegalArgumentException("Id студента не может быть null или пустой строкой");
         }
         Student removed = students.remove(studentId);
         if (removed == null) {
@@ -101,7 +101,7 @@ public class ServiceStudent {
      * @param students список студентов для проверки.
      * @throws IllegalArgumentException если список null или пустой
      */
-    public static void validateStudentList(ArrayList<Student> students) {
+    public static void validateStudentList(List<Student> students) {
         if (students == null || students.isEmpty()) {
             throw new IllegalArgumentException("Список студентов не может быть пустым или null!");
         }
@@ -113,9 +113,9 @@ public class ServiceStudent {
      * @return новый отсортированный список студентов
      * @throws IllegalArgumentException если список студентов null или пустой
      */
-    public static ArrayList<Student> sortStudentsList(ArrayList<Student> students) {
+    public static List<Student> sortStudentsList(List<Student> students) {
         validateStudentList(students);
-        ArrayList<Student> list = new ArrayList<>(students);
+        List<Student> list = new ArrayList<>(students);
         list.sort(Comparator.comparing(Student::getName)
                 .thenComparing(Comparator.comparing(Student::getAverageGrade).reversed()));
         return list;
@@ -128,7 +128,7 @@ public class ServiceStudent {
      * @return средний балл студентов или 0.0 если таких студентов нет
      * @throws IllegalArgumentException если список студентов null или пустой
      */
-    public static double findAverageGradeSpecificStudents(ArrayList<Student> students) {
+    public static double findAverageGradeSpecificStudents(List<Student> students) {
         validateStudentList(students);
         return (students.stream()
                 .filter(student -> student.getAge() > 20 && student.getName().startsWith("A"))

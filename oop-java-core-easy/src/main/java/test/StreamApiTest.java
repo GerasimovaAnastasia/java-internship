@@ -5,13 +5,14 @@ import service.ServiceStudent;
 import test.utils.TestMethod;
 import test.utils.TestRunnerUtil;
 
-import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Тестовый класс для проверки функциональности Stream API.
  * Содержит тесты для работы с потоками данных студентов.
  *
  * @see Student
- * @see ServiceStudent#findAverageGradeSpecificStudents(ArrayList)
+ * @see ServiceStudent#findAverageGradeSpecificStudents(List)
  */
 public final class StreamApiTest {
 
@@ -46,10 +47,10 @@ public final class StreamApiTest {
      *
      * @return true если расчет среднего балла корректен, false в противном случае
      * @see ServiceStudent#createSampleStudents
-     * @see ServiceStudent#findAverageGradeSpecificStudents(ArrayList)
+     * @see ServiceStudent#findAverageGradeSpecificStudents(List)
      */
     public static boolean shouldFindAverageGradeForSpecificStudents() {
-        ArrayList<Student> studentArrayList = ServiceStudent.createSampleStudents();
+        List<Student> studentArrayList = ServiceStudent.createSampleStudents();
 
         double averageGrade = ServiceStudent.findAverageGradeSpecificStudents(studentArrayList);
         boolean testPassed = averageGrade == 4.6;
