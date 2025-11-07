@@ -1,16 +1,12 @@
 package dev.gerasimova;
 
-import com.google.common.base.Strings;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+
+@SpringBootApplication
 public class Main {
     public static void main(String[] args) {
-        String str = "Hello!";
-
-        if (Main.isValidUserInput(str)) {
-            System.out.println("Строка не пустая!");
-        }
-    }
-    public static boolean isValidUserInput(String input) {
-        return !Strings.isNullOrEmpty(input);
+        SpringApplication.run(Main.class, args);
     }
 }
