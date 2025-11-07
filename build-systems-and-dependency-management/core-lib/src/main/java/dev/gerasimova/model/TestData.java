@@ -1,9 +1,9 @@
-package dev.gerasimova;
+package dev.gerasimova.model;
 
 /**
  * Вспомогательный класс для тестирования версии библиотеки Jackson.
  */
-class TestData {
+public class TestData {
     public String name;
     public int age;
 

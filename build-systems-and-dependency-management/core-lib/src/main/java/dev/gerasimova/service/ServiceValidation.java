@@ -1,21 +1,18 @@
-package dev.gerasimova;
+package dev.gerasimova.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import dev.gerasimova.model.TestData;
 
 /**
- * Контроллер для тестирования.
+ * Сервисный класс для тестирования библиотек Jackson и Guava.
  */
-@RestController
-public class TestController {
+public class ServiceValidation {
 
     /**
      * Метод для тестирования корректной работы библиотеки guava.
      */
-    @GetMapping("/test/guava")
-    public String testGuava() {
+    public static String validationGuava() {
         String str = "Hello!";
         if (!Strings.isNullOrEmpty(str)) {
             return "Guava работает! Строка не пустая!";
@@ -25,8 +22,7 @@ public class TestController {
     /**
      * Метод для вывода версии библиотеки Jackson.
      */
-    @GetMapping("/test/jackson")
-    public String testJackson() throws Exception {
+    public static String validationVersionForJacksonLib() throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         String version = mapper.version().toString();
         TestData data = new TestData("Test", 25);
