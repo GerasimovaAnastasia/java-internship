@@ -1,5 +1,6 @@
 package dev.gerasimova.controller;
 
+import dev.gerasimova.model.Book;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -23,5 +24,16 @@ public class BookController {
     @GetMapping("/hello")
     public String getMessage() {
         return "Hello, Spring!";
+    }
+
+    /**
+     * Тестовый endpoint для вывода тестовой книги
+     * @return - книга
+     */
+    @Operation(summary = "Get example book", description = "Возвращает тестовую книгу")
+    @ApiResponse(responseCode = "200", description = "OK")
+    @GetMapping("/book")
+    public Book getExampleBook() {
+        return new Book(4L, "Eugene Onegin", "Pushkin", 650.0);
     }
 }
