@@ -5,6 +5,7 @@ import dev.gerasimova.model.Book;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Optional;
@@ -84,5 +85,12 @@ public class LibraryService implements CommandLineRunner {
      */
     public void deleteBook(Long id) {
         bookMap.remove(id);
+    }
+    /**
+     * Метод возвращает все книги из хранилища.
+     * @return список книг из хранилища.
+     */
+    public List<Book> getAllBooks() {
+        return bookMap.values().stream().toList();
     }
 }

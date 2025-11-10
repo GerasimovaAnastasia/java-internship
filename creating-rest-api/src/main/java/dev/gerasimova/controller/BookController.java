@@ -87,4 +87,39 @@ public class BookController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
         }
     }
+    /**
+     * Endpoint для получения списка книг или конкретной книги по названию.
+     *
+     * @param title - название книги.
+     * @return - книгу, с заданным названием / список книг, если параметр title не указан.
+     */
+    @Operation( summary = "Поиск книги по названию или получение всех книг",
+            description = "Если параметр title не указан - возвращает все книги. Если указан - ищет по точному совпадению названия.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Успешный ответ: список книг или одна книга",
+                    content = @Content(schema = @Schema(implementation = Book.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Книга не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    @Parameter(name = "title", description = "Название книги для поиска", example = "Transformation")
+    @GetMapping("/books/search")
+    public ResponseEntity<?> searchBook(@RequestParam(required = false) String title) {
+        if (title == null || title.isBlank()) {
+            return ResponseEntity.ok(libraryService.getAllBooks());
+        } else {
+            Optional<Book> book = libraryService.getBookByTitle(title);
+            if (book.isPresent()) {
+                return ResponseEntity.ok(book.get());
+            } else {
+                ErrorResponse error = new ErrorResponse("Книга с title " + title + " не найдена");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+            }
+        }
+    }
 }
