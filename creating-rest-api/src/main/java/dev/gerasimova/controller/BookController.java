@@ -1,5 +1,6 @@
 package dev.gerasimova.controller;
 
+import dev.gerasimova.dto.CreateBookDto;
 import dev.gerasimova.dto.ErrorResponse;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.LibraryService;
@@ -10,6 +11,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -120,6 +122,38 @@ public class BookController {
                 ErrorResponse error = new ErrorResponse("Книга с title " + title + " не найдена");
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
             }
+        }
+    }
+
+    /**
+     * Endpoint для сохранения новой книги в хранилище.
+     *
+     * @param createBookDto - дто для сохранения введенных данных о новой книге.
+     * @return - новая сохраненная книга.
+     */
+    @Operation(summary = "Сохранение новой книги в хранилище",
+            description = "Новая книга будет добавлена в хранилище")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "201",
+                    description = "Успешный ответ: книга успешно сохранена",
+                    content = @Content(schema = @Schema(implementation = Book.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Невалидные данные книги",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    @PostMapping("/books")
+    public ResponseEntity<?> createBook(@RequestBody @Valid CreateBookDto createBookDto) {
+        try {
+            Book newBook = createBookDto.toBook();
+            Book savedBook = libraryService.saveBook(newBook);
+            return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
+        } catch (IllegalArgumentException e) {
+            ErrorResponse error = new ErrorResponse("Невалидные данные книги");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
     }
 }
