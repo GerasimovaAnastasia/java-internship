@@ -84,6 +84,9 @@ public class LibraryService implements CommandLineRunner {
      * @param id - уникальный идентификатор книги.
      */
     public void deleteBook(Long id) {
+        if (!bookMap.containsKey(id)) {
+            throw new IllegalArgumentException("Книга с id " + id + " не найдена!");
+        }
         bookMap.remove(id);
     }
     /**

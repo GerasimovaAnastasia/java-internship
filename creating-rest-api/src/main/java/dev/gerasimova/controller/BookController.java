@@ -199,4 +199,27 @@ public class BookController {
         Book updatedBook = libraryService.saveBook(createBookDto.toBook());
         return ResponseEntity.ok(updatedBook);
     }
+
+    /**
+     * Удаляет книгу из хранилища по её идентификатору.
+     *
+     * @param id уникальный идентификатор книги для удаления
+     * @return ResponseEntity<Void> с HTTP статусом:
+     *         - 204 No Content если книга успешно удалена
+     *         - 404 Not Found если книга с указанным ID не найдена
+     */
+    @Operation(summary = "Удаление книги из хранилища", description = "Книга удалена из хранилища")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Книга успешно удалена"),
+            @ApiResponse(responseCode = "404", description = "Книга не найдена")
+    })
+    @DeleteMapping("/books/{id}")
+    public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
+        try {
+            libraryService.deleteBook(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
