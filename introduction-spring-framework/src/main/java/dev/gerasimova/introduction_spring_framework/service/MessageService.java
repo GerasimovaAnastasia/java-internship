@@ -13,12 +13,15 @@ import org.springframework.stereotype.Service;
 @Service
 public class MessageService {
     private final String message ;
+    private final MessageRepository messageRepository;
 
     /**
      * Конструктор внедряет текст сообщения через аннотацию @Value("${app.greeting}") из application.properties.
      * @param str - сообщение
+     * @param messageRepository - репозиторий для работы с сущностью "Сообщение"
      */
-    public MessageService(@Value("${app.greeting}") String str) {
+    public MessageService(@Value("${app.greeting}") String str, MessageRepository messageRepository) {
+        this.messageRepository = messageRepository;
         this.message = str;
     }
 
@@ -30,4 +33,12 @@ public class MessageService {
         return message;
     }
 
+    /**
+     * Метод имитирует возвращение информацию из бд через репозиторий.
+     * @return - полученное сообщение.
+     */
+    public String getMessageInfo() {
+        String message = messageRepository.findMessage();
+        return "Find: " + message;
+    }
 }

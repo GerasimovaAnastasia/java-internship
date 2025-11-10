@@ -30,7 +30,7 @@ public class MessageController {
      */
     @GetMapping("/test")
     public String getMessage() {
-        return messageService.getMessage();
+        return messageService.getMessageInfo();
     }
 
 }
