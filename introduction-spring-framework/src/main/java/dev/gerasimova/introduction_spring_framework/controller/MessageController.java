@@ -1,5 +1,7 @@
 package dev.gerasimova.introduction_spring_framework.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.gerasimova.introduction_spring_framework.service.MessageService;
 import dev.gerasimova.introduction_spring_framework.service.OrderService;
 import dev.gerasimova.introduction_spring_framework.service.PrototypeScopeService;
@@ -74,5 +76,23 @@ public class MessageController {
         PrototypeScopeService prototype = context.getBean(PrototypeScopeService.class);
         prototype.increment();
         return prototype.getCount();
+    }
+    /**
+     * Endpoint для тестирования внедрения бина из spring-контекста.
+     *
+     * @return - информация версии библиотеке Jackson.
+     */
+    @GetMapping("/config")
+    public String validJackson() {
+        try {
+            ObjectMapper mapper = context.getBean(ObjectMapper.class);
+            String version = mapper.version().toString();
+
+            String json = mapper.writeValueAsString("data");
+
+            return String.format("Jackson %s работает: %s", version, json);
+        } catch (JsonProcessingException e) {
+            return "Ошибка при сериализации!";
+        }
     }
 }
