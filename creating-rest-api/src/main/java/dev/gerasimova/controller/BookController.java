@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -155,5 +156,47 @@ public class BookController {
             ErrorResponse error = new ErrorResponse("Невалидные данные книги");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
         }
+    }
+    /**
+     * Метод обновляет данные о книге, находя ее по id.
+     *
+     * @param createBookDto - новые данные о книге.
+     * @param id - уникальный идентификатор для поиска книги.
+     * @return - книга с обновленными методами.
+     */
+    @Operation(summary = "Сохранение обновленной информации о книги в хранилище",
+            description = "Книга с обновленными данными будет добавлена в хранилище")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Успешный ответ: книга успешно изменена",
+                    content = @Content(schema = @Schema(implementation = Book.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Невалидные данные книги",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Книга не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    @PutMapping("/books/{id}")
+    public ResponseEntity<?> updateBookById(@RequestBody @Valid CreateBookDto createBookDto,
+                                            @PathVariable Long id) {
+        if (libraryService.getBookById(id).isEmpty()) {
+            ErrorResponse error = new ErrorResponse("Книга с id " + id + " не найдена!");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+        }
+
+        if (!Objects.equals(id, createBookDto.id())) {
+            ErrorResponse error = new ErrorResponse("ID в пути и в теле запроса не совпадают");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+
+        Book updatedBook = libraryService.saveBook(createBookDto.toBook());
+        return ResponseEntity.ok(updatedBook);
     }
 }
