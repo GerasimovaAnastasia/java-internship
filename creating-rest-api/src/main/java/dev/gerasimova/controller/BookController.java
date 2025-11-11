@@ -17,7 +17,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
-import java.util.Optional;
 
 /**
  * Контроллер для работы с книгами.
@@ -82,13 +81,8 @@ public class BookController {
     @Parameter(name = "id", description = "ID книги", example = "1")
     @GetMapping("/books/{id}")
     public ResponseEntity<?> getBookById(@PathVariable Long id) {
-       Optional<Book> book = libraryService.getBookById(id);
-        if (book.isPresent()) {
-            return ResponseEntity.ok(book);
-        } else {
-            ErrorResponse error = new ErrorResponse("Книга с ID " + id + " не найдена");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-        }
+       Book book = libraryService.getBookById(id);
+        return ResponseEntity.ok(book);
     }
     /**
      * Endpoint для получения списка книг или конкретной книги по названию.
@@ -116,13 +110,8 @@ public class BookController {
         if (title == null || title.isBlank()) {
             return ResponseEntity.ok(libraryService.getAllBooks());
         } else {
-            Optional<Book> book = libraryService.getBookByTitle(title);
-            if (book.isPresent()) {
-                return ResponseEntity.ok(book.get());
-            } else {
-                ErrorResponse error = new ErrorResponse("Книга с title " + title + " не найдена");
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-            }
+            Book book = libraryService.getBookByTitle(title);
+            return ResponseEntity.ok(book);
         }
     }
 
@@ -148,14 +137,8 @@ public class BookController {
     })
     @PostMapping("/books")
     public ResponseEntity<?> createBook(@RequestBody @Valid CreateBookDto createBookDto) {
-        try {
-            Book newBook = createBookDto.toBook();
-            Book savedBook = libraryService.saveBook(newBook);
-            return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
-        } catch (IllegalArgumentException e) {
-            ErrorResponse error = new ErrorResponse("Невалидные данные книги");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
-        }
+        Book newBook = createBookDto.toBook();
+        return ResponseEntity.status(HttpStatus.CREATED).body(libraryService.saveBook(newBook));
     }
     /**
      * Метод обновляет данные о книге, находя ее по id.
@@ -186,14 +169,10 @@ public class BookController {
     @PutMapping("/books/{id}")
     public ResponseEntity<?> updateBookById(@RequestBody @Valid CreateBookDto createBookDto,
                                             @PathVariable Long id) {
-        if (libraryService.getBookById(id).isEmpty()) {
-            ErrorResponse error = new ErrorResponse("Книга с id " + id + " не найдена!");
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
-        }
+        libraryService.getBookById(id);
 
         if (!Objects.equals(id, createBookDto.id())) {
-            ErrorResponse error = new ErrorResponse("ID в пути и в теле запроса не совпадают");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+            throw new IllegalArgumentException("ID в пути и в теле запроса не совпадают");
         }
 
         Book updatedBook = libraryService.saveBook(createBookDto.toBook());
@@ -215,11 +194,7 @@ public class BookController {
     })
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
-        try {
-            libraryService.deleteBook(id);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
+        libraryService.deleteBook(id);
+        return ResponseEntity.noContent().build();
     }
 }

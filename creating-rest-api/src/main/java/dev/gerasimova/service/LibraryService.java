@@ -1,6 +1,7 @@
 package dev.gerasimova.service;
 
 
+import dev.gerasimova.exception.BookException;
 import dev.gerasimova.model.Book;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Service;
@@ -8,7 +9,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Optional;
 
 /**
  * Cервисный класс-библиотека для хранения книг и взаимодействия с ними.
@@ -48,10 +48,14 @@ public class LibraryService implements CommandLineRunner {
      * Находит книгу по идентификатору.
      *
      * @param id уникальный идентификатор книги
-     * @return Optional с книгой, если найдена, иначе empty
+     * @return книгу, если найдена, иначе BookException
      */
-    public Optional<Book> getBookById(Long id) {
-        return Optional.ofNullable(bookMap.get(id));
+    public Book getBookById(Long id) {
+        Book book = bookMap.get(id);
+        if (book == null) {
+            throw new BookException(id);
+        }
+        return book;
     }
     /**
      * Метод возвращает книгу по названию.
@@ -60,13 +64,11 @@ public class LibraryService implements CommandLineRunner {
      * @param title - название книги
      * @return - книга с заданным названием.
      */
-    public Optional<Book> getBookByTitle(String title) {
-        if (title == null || title.isBlank()) {
-            return Optional.empty();
-        }
+    public Book getBookByTitle(String title) {
         return bookMap.values().stream()
                 .filter(b -> b.getTitle().equalsIgnoreCase(title))
-                .findFirst();
+                .findFirst()
+                .orElseThrow(() -> new BookException("Книга с названием '" + title + "' не найдена"));
     }
     /**
      * Сохраняет книгу в хранилище.
@@ -84,8 +86,8 @@ public class LibraryService implements CommandLineRunner {
      * @param id - уникальный идентификатор книги.
      */
     public void deleteBook(Long id) {
-        if (!bookMap.containsKey(id)) {
-            throw new IllegalArgumentException("Книга с id " + id + " не найдена!");
+        if(bookMap.get(id) == null) {
+            throw new BookException(id);
         }
         bookMap.remove(id);
     }
