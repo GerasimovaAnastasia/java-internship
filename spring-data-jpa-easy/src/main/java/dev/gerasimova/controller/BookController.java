@@ -17,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 public class BookController {
@@ -53,22 +55,43 @@ public class BookController {
         return ResponseEntity.ok(book);
     }
     /**
-     * Endpoint для получения списка книг.
+     * Endpoint для получения списка книг/списка книг конкретного автора/конкретной книги по названию и автору.
      *
      * @return - список книг.
      */
-    @Operation( summary = "Получение всех книг",
-            description = "Возвращает все книги.")
+    @Operation( summary = "Получение всех книг/книг только одного автора/конкретной книги по автору и названию ",
+            description = "Возвращает все книги/книги конкретного автора/ одну книгу.")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Успешный ответ: список книг",
+                    description = "Успешный ответ",
                     content = @Content(schema = @Schema(implementation = Book.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Книга не найдена",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     @GetMapping("/books/search")
-    public ResponseEntity<?> searchBook() {
-        return ResponseEntity.ok(service.getAllBooks());
+    public ResponseEntity<?> searchBook(@RequestParam(required = false) String author,
+                                        @RequestParam(required = false) String title) {
+        boolean hasAuthor = author != null && !author.isBlank();
+        boolean hasTitle = title != null && !title.isBlank();
+
+        if (hasAuthor && hasTitle) {
+            return service.findByTitleAndAuthor(title, author)
+                    .map(ResponseEntity::ok)
+                    .orElseThrow(() -> new BookException("Книга с таким названием и автором не найдена!"));
+        } else if (hasAuthor) {
+            List<Book> books = service.findByAuthor(author);
+            if (books.isEmpty()) {
+                throw new BookException("Книги автора '" + author + "' не найдены");
+            }
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.ok(service.getAllBooks());
+        }
     }
     /**
      * Endpoint для сохранения новой книги в хранилище.

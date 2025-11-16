@@ -66,4 +66,25 @@ public class BookService {
     public List<Book> getAllBooks() {
         return repository.findAll();
     }
+    /**
+     * Возвращает список всех книг конкретного автора из бд.
+     *
+     * @param author - автор
+     * @return список всех книг конкретного автора, может быть пустым
+     * @see BookRepository#findByAuthor(String author)
+     */
+    public List<Book> findByAuthor(String author) {
+        return repository.findByAuthor(author);
+    }
+    /**
+     * Возвращает книгу конкретного автора с заданным названием из бд.
+     *
+     * @param author - автор
+     * @param title - название книги
+     * @return книга найденная по названию и автору
+     * @see BookRepository#findByTitleAndAuthor(String title, String author)
+     */
+    public Optional<Book> findByTitleAndAuthor(String title, String author) {
+        return repository.findByTitleAndAuthor(title, author);
+    }
 }
