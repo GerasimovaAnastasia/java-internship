@@ -52,7 +52,6 @@ public class BookService {
      * Удаляет книгу из хранилища.
      *
      * @param book книга для удаления
-     * @throws IllegalArgumentException если книга равна {@code null}
      * @see BookRepository#delete(Object)
      */
     public void deleteBook(Book book) {
