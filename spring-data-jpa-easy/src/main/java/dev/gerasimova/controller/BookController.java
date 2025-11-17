@@ -1,10 +1,14 @@
 package dev.gerasimova.controller;
 
+import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.ErrorResponse;
 import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
+import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.dto.CreateBookDto;
+import dev.gerasimova.service.AuthorService;
 import dev.gerasimova.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -19,13 +23,20 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
+/**
+ * Контроллер для endpoints, связанных с сущностями книга и автор книги.
+ *
+ * @see Book
+ * @see Author
+ */
 @RestController
 public class BookController {
-    private final BookService service;
+    private final BookService bookService;
+    private final AuthorService authorService;
 
-    public BookController(BookService service) {
-        this.service = service;
+    public BookController(BookService bookService, AuthorService authorService) {
+        this.bookService = bookService;
+        this.authorService = authorService;
     }
 
     /**
@@ -39,7 +50,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Книга найдена",
-                    content = @Content(schema = @Schema(implementation = Book.class))
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",
@@ -50,9 +61,9 @@ public class BookController {
     @Parameter(name = "id", description = "ID книги", example = "1")
     @GetMapping("/books/{id}")
     public ResponseEntity<?> getBookById(@PathVariable Long id) {
-        Book book = service.finBookById(id)
+        Book book = bookService.finBookById(id)
                 .orElseThrow(() -> new BookException(id));
-        return ResponseEntity.ok(book);
+        return ResponseEntity.status(HttpStatus.OK).body(BookResponseDto.fromEntity(book));
     }
     /**
      * Endpoint для получения списка книг/списка книг конкретного автора/конкретной книги по названию и автору.
@@ -65,32 +76,37 @@ public class BookController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Успешный ответ",
-                    content = @Content(schema = @Schema(implementation = Book.class))
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Книга не найдена",
+                    description = "Сущность не найдена (книга или автор)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     @GetMapping("/books/search")
-    public ResponseEntity<?> searchBook(@RequestParam(required = false) String author,
+    public ResponseEntity<?> searchBook(@RequestParam(required = false) String authorSurname,
                                         @RequestParam(required = false) String title) {
-        boolean hasAuthor = author != null && !author.isBlank();
+        boolean hasAuthor = authorSurname != null && !authorSurname.isBlank();
         boolean hasTitle = title != null && !title.isBlank();
 
         if (hasAuthor && hasTitle) {
-            return service.findByTitleAndAuthor(title, author)
-                    .map(ResponseEntity::ok)
+            return bookService.findByTitleAndAuthor(title, authorSurname)
+                    .map(book -> ResponseEntity.status(HttpStatus.OK).body(BookResponseDto.fromEntity(book)))
                     .orElseThrow(() -> new BookException("Книга с таким названием и автором не найдена!"));
         } else if (hasAuthor) {
-            List<Book> books = service.findByAuthor(author);
+            List<BookResponseDto> books = bookService.findByAuthor(authorSurname).stream()
+                    .map(BookResponseDto::fromEntity)
+                    .toList();
             if (books.isEmpty()) {
-                throw new BookException("Книги автора '" + author + "' не найдены");
+                throw new BookException("Книги автора '" + authorSurname + "' не найдены");
             }
-            return ResponseEntity.ok(books);
+            return ResponseEntity.status(HttpStatus.OK).body(books);
         } else {
-            return ResponseEntity.ok(service.getAllBooks());
+            List<BookResponseDto> books = bookService.getAllBooks().stream()
+                    .map(BookResponseDto::fromEntity)
+                    .toList();
+            return ResponseEntity.status(HttpStatus.OK).body(books);
         }
     }
     /**
@@ -105,7 +121,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "201",
                     description = "Успешный ответ: книга успешно сохранена",
-                    content = @Content(schema = @Schema(implementation = Book.class))
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
             ),
             @ApiResponse(
                     responseCode = "400",
@@ -116,12 +132,19 @@ public class BookController {
                     responseCode = "409",
                     description = "Конфликтующие данные",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Указанный автор не существует",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
     @PostMapping("/books")
     public ResponseEntity<?> createBook(@Valid @RequestBody CreateBookDto createBookDto) {
-        Book newBook = createBookDto.toBook();
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.saveBook(newBook));
+        Author existingAuthor = authorService.finBookById(createBookDto.authorID())
+                .orElseThrow(() -> new AuthorException(createBookDto.authorID()));
+        Book newBook = createBookDto.toBook(existingAuthor);
+        return ResponseEntity.status(HttpStatus.CREATED).body(BookResponseDto.fromEntity(bookService.saveBook(newBook)));
     }
     /**
      * Метод обновляет данные о книге, находя ее по id.
@@ -136,11 +159,11 @@ public class BookController {
             @ApiResponse(
                     responseCode = "200",
                     description = "Успешный ответ: книга успешно изменена",
-                    content = @Content(schema = @Schema(implementation = Book.class))
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
             ),
             @ApiResponse(
                     responseCode = "404",
-                    description = "Книга не найдена",
+                    description = "Сущность не найдена (книга или автор)",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @ApiResponse(
@@ -158,13 +181,15 @@ public class BookController {
     @PutMapping("/books/{id}")
     public ResponseEntity<?> updateBookById(@Valid @RequestBody UpdateBookDto dto,
                                             @PathVariable Long id) {
-        Book existingBook = service.finBookById(id)
+        Book existingBook = bookService.finBookById(id)
                 .orElseThrow(() -> new BookException(id));
+        Author existingAuthor = authorService.finBookById(dto.authorID())
+                        .orElseThrow(() -> new AuthorException(dto.authorID()));
 
-        dto.updateBook(existingBook);
+        dto.updateBook(existingBook, existingAuthor);
 
-        Book updatedBook = service.saveBook(existingBook);
-        return ResponseEntity.ok(updatedBook);
+        Book updatedBook = bookService.saveBook(existingBook);
+        return ResponseEntity.status(HttpStatus.OK).body(BookResponseDto.fromEntity(updatedBook));
     }
     /**
      * Удаляет книгу из хранилища по её идентификатору.
@@ -181,9 +206,9 @@ public class BookController {
     })
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
-        Book existingBook = service.finBookById(id)
+        Book existingBook = bookService.finBookById(id)
                 .orElseThrow( () -> new BookException(id));
-        service.deleteBook(existingBook);
+        bookService.deleteBook(existingBook);
         return ResponseEntity.noContent().build();
     }
 }

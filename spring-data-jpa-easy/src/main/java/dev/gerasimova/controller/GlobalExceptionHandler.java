@@ -1,6 +1,7 @@
 package dev.gerasimova.controller;
 
 import dev.gerasimova.dto.ErrorResponse;
+import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,18 +24,16 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     /**
-     * Обрабатывает случаи, когда книга не найдена.
+     * Обрабатывает случаи, когда сущность не найдена.
      *
-     * @param ex исключение BookException
+     * @param e исключение BookException
      * @return ResponseEntity с ошибкой 404
      */
-    @ExceptionHandler(BookException.class)
-    public ResponseEntity<ErrorResponse> handleBookNotFound(BookException ex) {
-
-        ErrorResponse error = new ErrorResponse(ex.getMessage());
+    @ExceptionHandler({AuthorException.class, BookException.class})
+    public ResponseEntity<ErrorResponse> handleNotFoundExceptions(RuntimeException e) {
+        ErrorResponse error = new ErrorResponse(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
     }
-
 
     /**
      * Обрабатывает ошибки валидации @Valid.

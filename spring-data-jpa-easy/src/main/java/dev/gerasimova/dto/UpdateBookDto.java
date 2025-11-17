@@ -1,23 +1,27 @@
 package dev.gerasimova.dto;
 
+import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
 /**
  * DTO книги для сохранения данных из запроса.
- * Содержит информацию о книге: название, автора, цену, год выпуска.
+ * Содержит информацию о книге: название, id автора, цену, год выпуска.
  * Используется для изменения данных о книге.
  */
+@Schema(description = "DTO для обновления данных книги")
 public record UpdateBookDto(
         @Schema(description = "Название книги", example = "Transformation")
         @NotBlank(message = "Название обязательно")
         String title,
-        @Schema(description = "Автор книги", example = "Kafka")
-        @NotBlank(message = "Автор обязателен")
-        String author,
+        @Schema(description = "ID автора книги", example = "1")
+        @NotNull(message = "ID автора обязателен")
+        @Positive(message = "ID автора должен быть положительным")
+        Long authorID,
         @Schema(description = "Цена книги в рублях", example = "400.0")
         @NotNull(message = "Цена обязательна")
         @PositiveOrZero(message = "Цена не может быть отрицательной")
@@ -31,9 +35,9 @@ public record UpdateBookDto(
      * Метод для обновления существующий книги
      * @param book - книга, у которой изменились поля.
      */
-    public void updateBook(Book book) {
+    public void updateBook(Book book, Author author) {
         book.setTitle(title());
-        book.setAuthor(author());
+        book.setAuthor(author);
         book.setPrice(price());
         book.setYearRelease(yearRelease());
     }

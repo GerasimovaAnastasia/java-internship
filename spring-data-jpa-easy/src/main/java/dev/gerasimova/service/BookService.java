@@ -16,15 +16,14 @@ import java.util.Optional;
  */
 @Service
 public class BookService {
-    private final BookRepository repository;
-
+    private final BookRepository bookRepository;
     /**
      * Конструктор с внедрением зависимости репозитория.
      *
-     * @param repository репозиторий для работы с книгами в БД
+     * @param bookRepository репозиторий для работы с книгами в БД
      */
-    public BookService(BookRepository repository) {
-        this.repository = repository;
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
     }
     /**
      * Находит книгу по идентификатору.
@@ -34,7 +33,7 @@ public class BookService {
      * @see BookRepository#findById(Object)
      */
     public Optional<Book> finBookById(Long id) {
-        return repository.findById(id);
+        return bookRepository.findById(id);
     }
     /**
      * Сохраняет или обновляет книгу в хранилище.
@@ -46,7 +45,7 @@ public class BookService {
      * @see BookRepository#save(Object)
      */
     public Book saveBook(Book book) {
-        return repository.save(book);
+        return bookRepository.save(book);
     }
     /**
      * Удаляет книгу из хранилища.
@@ -55,7 +54,7 @@ public class BookService {
      * @see BookRepository#delete(Object)
      */
     public void deleteBook(Book book) {
-        repository.delete(book);
+        bookRepository.delete(book);
     }
     /**
      * Возвращает список всех книг из хранилища.
@@ -64,17 +63,17 @@ public class BookService {
      * @see BookRepository#findAll()
      */
     public List<Book> getAllBooks() {
-        return repository.findAll();
+        return bookRepository.findAll();
     }
     /**
      * Возвращает список всех книг конкретного автора из бд.
      *
      * @param author - автор
      * @return список всех книг конкретного автора, может быть пустым
-     * @see BookRepository#findByAuthor(String author)
+     * @see BookRepository#findByAuthorSurname(String author)
      */
     public List<Book> findByAuthor(String author) {
-        return repository.findByAuthor(author);
+        return bookRepository.findByAuthorSurname(author);
     }
     /**
      * Возвращает книгу конкретного автора с заданным названием из бд.
@@ -82,9 +81,9 @@ public class BookService {
      * @param author - автор
      * @param title - название книги
      * @return книга найденная по названию и автору
-     * @see BookRepository#findByTitleAndAuthor(String title, String author)
+     * @see BookRepository#findByTitleAndAuthorSurname(String title, String author)
      */
     public Optional<Book> findByTitleAndAuthor(String title, String author) {
-        return repository.findByTitleAndAuthor(title, author);
+        return bookRepository.findByTitleAndAuthorSurname(title, author);
     }
 }

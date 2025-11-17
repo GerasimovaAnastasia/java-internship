@@ -1,7 +1,7 @@
 package dev.gerasimova.exception;
 
 /**
- * Исключение, выбрасываемое когда книга не найдена в системе.
+ * Исключение, выбрасываемое когда книга не найдена в системе или иное сообщение об ошибке.
  */
 public class BookException extends RuntimeException {
 
