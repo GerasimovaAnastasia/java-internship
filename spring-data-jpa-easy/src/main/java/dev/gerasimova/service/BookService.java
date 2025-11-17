@@ -63,7 +63,7 @@ public class BookService {
      * @see BookRepository#findAll()
      */
     public List<Book> getAllBooks() {
-        return bookRepository.findAll();
+        return bookRepository.findAllWithAuthor();
     }
     /**
      * Возвращает список всех книг конкретного автора из бд.
