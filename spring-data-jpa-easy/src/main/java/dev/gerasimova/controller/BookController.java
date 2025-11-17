@@ -66,7 +66,8 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.OK).body(BookResponseDto.fromEntity(book));
     }
     /**
-     * Endpoint для получения списка книг/списка книг конкретного автора/конкретной книги по названию и автору.
+     * Endpoint для получения списка книг/списка книг конкретного автора/
+     * конкретной книги по названию и автору.
      *
      * @return - список книг.
      */
@@ -210,5 +211,26 @@ public class BookController {
                 .orElseThrow( () -> new BookException(id));
         bookService.deleteBook(existingBook);
         return ResponseEntity.noContent().build();
+    }
+    /**
+     * Endpoint для получения списка книг по части названия книги, без учета регистра,
+     * отсортированный по году издания.
+     *
+     * @return - список книг.
+     */
+    @Operation( summary = "Получение книг по части названия ",
+            description = "Возвращает все книги по части названия, сортирует по году издания.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Успешный ответ",
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
+            )
+    })
+    @GetMapping("/books/search/title")
+    public List<BookResponseDto> searchBooksByTitle(@RequestParam String title) {
+        return bookService.searchByTitleOrderByYear(title).stream()
+                .map(BookResponseDto::fromEntity)
+                .toList();
     }
 }

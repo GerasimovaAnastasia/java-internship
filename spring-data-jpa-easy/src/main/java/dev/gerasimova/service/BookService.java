@@ -86,4 +86,14 @@ public class BookService {
     public Optional<Book> findByTitleAndAuthor(String title, String author) {
         return bookRepository.findByTitleAndAuthorSurname(title, author);
     }
+    /**
+     * Возвращает список книг по части названия книги без учета регистра и сортирует их по году издания.
+     *
+     * @param searchText - часть названия
+     * @return список книг
+     * @see BookRepository#searchByTitleOrderByYear(String searchText)
+     */
+    public List<Book> searchByTitleOrderByYear(String searchText) {
+        return bookRepository.searchByTitleOrderByYear(searchText);
+    }
 }

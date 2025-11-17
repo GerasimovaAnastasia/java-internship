@@ -27,4 +27,8 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE b.author.surname = :surname AND " +
             "b.title = :title")
     Optional<Book> findByTitleAndAuthorSurname(@Param("title") String title, @Param("surname") String author);
+
+    @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE lower(b.title) LIKE lower(concat('%', :searchText, '%')) " +
+            "ORDER BY b.yearRelease DESC")
+    List<Book> searchByTitleOrderByYear(@Param("searchText") String searchText);
 }
