@@ -15,7 +15,7 @@ import jakarta.validation.constraints.PositiveOrZero;
  */
 @Schema(description = "DTO для обновления данных книги")
 public record UpdateBookDto(
-        @Schema(description = "Название книги", example = "Transformation")
+        @Schema(description = "Название книги", example = "Война и мир")
         @NotBlank(message = "Название обязательно")
         String title,
         @Schema(description = "ID автора книги", example = "1")

@@ -1,13 +1,14 @@
 package dev.gerasimova.controller;
 
-import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.ErrorResponse;
+import dev.gerasimova.dto.BookResponseDto;
+import dev.gerasimova.dto.CreateBookWithAuthorDto;
+import dev.gerasimova.dto.CreateBookDto;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
-import dev.gerasimova.dto.CreateBookDto;
 import dev.gerasimova.service.AuthorService;
 import dev.gerasimova.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -228,9 +229,41 @@ public class BookController {
             )
     })
     @GetMapping("/books/search/title")
-    public List<BookResponseDto> searchBooksByTitle(@RequestParam String title) {
-        return bookService.searchByTitleOrderByYear(title).stream()
+    public  ResponseEntity<List<BookResponseDto>> searchBooksByTitle(@RequestParam String title) {
+        return  ResponseEntity.status(HttpStatus.OK).body(bookService.searchByTitleOrderByYear(title).stream()
                 .map(BookResponseDto::fromEntity)
-                .toList();
+                .toList());
+    }
+    /**
+     * Endpoint для сохранения книги и автора книги.
+     * Выполняется rollback, если выпало исключение.
+     *
+     * @return - новую книгу.
+     */
+    @Operation( summary = "Сохранение книги и автора",
+            description = "Сохраняет две сущности сразу: новую книгу и нового автора.")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Успешный ответ",
+                    content = @Content(schema = @Schema(implementation = BookResponseDto.class))
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Ошибка сервера",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "409",
+                    description = "Конфликт сущностей",
+                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            )
+    })
+    @PostMapping("/books/author")
+    public ResponseEntity<BookResponseDto> createBookWithAuthor(@RequestBody CreateBookWithAuthorDto dto) {
+        Author author = dto.toAuthor();
+        Book newBook = bookService.createBookWithAuthor(author, dto.toBook(author));
+        return ResponseEntity.status(HttpStatus.OK).body(
+                BookResponseDto.fromEntity(newBook));
     }
 }

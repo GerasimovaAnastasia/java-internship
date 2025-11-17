@@ -66,4 +66,16 @@ public class AuthorService {
     public List<Author> getAllAuthors() {
         return authorRepository.findAll();
     }
+
+     /**
+      * Проверяет, существует ли автор с заданными именем и фамилией.
+      *
+      * @param name - имя автора
+      * @param surname - фамилия автора
+      * @return true/false
+      * @see AuthorRepository#existsByNameAndSurname(String name, String surname)
+      */
+    public boolean existsByNameAndSurname(String name, String surname) {
+        return authorRepository.existsByNameAndSurname(name, surname);
+    }
 }

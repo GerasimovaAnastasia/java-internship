@@ -12,7 +12,7 @@ import jakarta.validation.constraints.PositiveOrZero;
  * Содержит информацию о книге: название, id автора, цену, год выпуска.
  */
 @Schema(description = "DTO книги")
-public record CreateBookDto(@Schema(description = "Название книги", example = "Transformation")
+public record CreateBookDto(@Schema(description = "Название книги", example = "Война и мир")
                             @NotBlank(message = "Название обязательно")
                             String title,
                             @Schema(description = "ID автора книги", example = "1")

@@ -1,7 +1,10 @@
 package dev.gerasimova.service;
 
+import dev.gerasimova.exception.AuthorException;
+import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,13 +20,15 @@ import java.util.Optional;
 @Service
 public class BookService {
     private final BookRepository bookRepository;
+    private final AuthorService authorService;
     /**
      * Конструктор с внедрением зависимости репозитория.
      *
      * @param bookRepository репозиторий для работы с книгами в БД
      */
-    public BookService(BookRepository bookRepository) {
+    public BookService(BookRepository bookRepository, AuthorService authorService) {
         this.bookRepository = bookRepository;
+        this.authorService = authorService;
     }
     /**
      * Находит книгу по идентификатору.
@@ -95,5 +100,26 @@ public class BookService {
      */
     public List<Book> searchByTitleOrderByYear(String searchText) {
         return bookRepository.searchByTitleOrderByYear(searchText);
+    }
+
+    /**
+     * Сохраняет в бд 2 сущности: новую книгу с новым автором, сели при сохранении падает исключение,
+     * происходит rollback - откат, не сохраняется ни одна сущность.
+     *
+     * @param author - новый автор
+     * @param book - новая книга
+     * @return новую книгу
+     * @throws AuthorException - если автор уже существует
+     */
+    @Transactional(rollbackOn = Exception.class)
+    public Book createBookWithAuthor(Author author, Book book) {
+        if (authorService.existsByNameAndSurname(author.getName(), author.getSurname())) {
+            throw new AuthorException("Автор уже существует: " + author.getName() + " " + author.getSurname());
+        }
+        Author saveAuthor = authorService.saveAuthor(author);
+        if (true) {
+            throw new RuntimeException("Тест отката транзакции!");
+        }
+        return saveBook(book);
     }
 }
