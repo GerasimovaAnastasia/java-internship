@@ -1,7 +1,5 @@
 package dev.gerasimova.dto;
 
-import dev.gerasimova.model.Author;
-import dev.gerasimova.model.Book;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -31,14 +29,4 @@ public record UpdateBookDto(
         @PositiveOrZero(message = "Год не может быть отрицательным")
         Integer yearRelease
 ) {
-    /**
-     * Метод для обновления существующий книги
-     * @param book - книга, у которой изменились поля.
-     */
-    public void updateBook(Book book, Author author) {
-        book.setTitle(title());
-        book.setAuthor(author);
-        book.setPrice(price());
-        book.setYearRelease(yearRelease());
-    }
 }

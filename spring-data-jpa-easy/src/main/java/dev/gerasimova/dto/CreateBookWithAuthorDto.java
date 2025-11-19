@@ -1,7 +1,5 @@
 package dev.gerasimova.dto;
 
-import dev.gerasimova.model.Author;
-import dev.gerasimova.model.Book;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -29,26 +27,4 @@ public record CreateBookWithAuthorDto(@Schema(description = "Название к
                                       @NotNull(message = "Год обязателен")
                                       @PositiveOrZero(message = "Год не может быть отрицательным")
                                       Integer yearRelease) {
-    /**
-     * Метод для конвертации объекта DTO в объект Book
-     *
-     * @return - new Book().
-     */
-    public Book toBook(Author author) {
-       return new Book(
-               title(),
-               author,
-               price(),
-               yearRelease()) ;
-    }
-    /**
-     * Метод для конвертации объекта DTO в объект Author
-     *
-     * @return - new Author().
-     */
-    public Author toAuthor() {
-        return new Author(
-                authorName(),
-                authorSurname()) ;
-    }
 }

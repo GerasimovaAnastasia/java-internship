@@ -2,6 +2,7 @@ package dev.gerasimova.service;
 
 import dev.gerasimova.model.Author;
 import dev.gerasimova.repository.AuthorRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -15,17 +16,9 @@ import java.util.Optional;
   * @see dev.gerasimova.repository.AuthorRepository
 **/
  @Service
+ @RequiredArgsConstructor
 public class AuthorService {
     private final AuthorRepository authorRepository;
-
-    /**
-     * Конструктор с внедрением зависимости репозитория.
-     *
-     * @param authorRepository репозиторий для работы с авторами в БД
-     */
-    public AuthorService(AuthorRepository authorRepository) {
-        this.authorRepository = authorRepository;
-    }
     /**
      * Находит автора по идентификатору.
      *
@@ -33,7 +26,7 @@ public class AuthorService {
      * @return Optional с найденным автором или пустой Optional, если автор не найден
      * @see AuthorRepository#findById(Object)
      */
-    public Optional<Author> finBookById(Long id) {
+    public Optional<Author> findAuthorById(Long id) {
         return authorRepository.findById(id);
     }
     /**

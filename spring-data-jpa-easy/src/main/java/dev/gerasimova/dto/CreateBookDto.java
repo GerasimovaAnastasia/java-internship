@@ -1,12 +1,11 @@
 package dev.gerasimova.dto;
 
-import dev.gerasimova.model.Author;
-import dev.gerasimova.model.Book;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
+
 /**
  * DTO книги для сохранения данных из запроса.
  * Содержит информацию о книге: название, id автора, цену, год выпуска.
@@ -27,17 +26,4 @@ public record CreateBookDto(@Schema(description = "Название книги",
                             @NotNull(message = "Год обязателен")
                             @PositiveOrZero(message = "Год не может быть отрицательным")
                             Integer yearRelease) {
-    /**
-     * Метод для конвертации объекта DTO в объект Book
-     *
-     * @param author - объект сущности Author - автор книги
-     * @return - new Book().
-     */
-    public Book toBook(Author author) {
-       return new Book(
-               title(),
-               author,
-               price(),
-               yearRelease()) ;
-    }
 }

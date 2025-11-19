@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Column;
 import jakarta.persistence.OneToMany;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -45,6 +46,7 @@ public class Author {
      * @param name имя автора (не может быть пустым)
      * @param surname фамилия автора (не может быть пустым)
      */
+    @Builder
     public Author(String name, String surname) {
         this.name = name;
         this.surname = surname;

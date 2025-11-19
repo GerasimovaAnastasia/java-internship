@@ -10,9 +10,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.FetchType;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 
 /**
@@ -56,6 +54,7 @@ public class Book {
      * @param date год выпуска книги (не может быть меньше минимально допустимого значения)
      * @throws IllegalArgumentException если параметры не соответствуют ограничениям
      */
+    @Builder
     public Book(String title, Author author, Double price, Integer date) {
         this.title = title;
         this.author = author;
@@ -74,7 +73,7 @@ public class Book {
         return "Book{" +
                 "id=" + id +
                 ", title='" + title + '\'' +
-                ", author='" + author + '\'' +
+                ", authorSurname='" + author.getSurname() + '\'' +
                 ", price=" + price +
                 ", yearRelease=" + yearRelease +
                 '}';
