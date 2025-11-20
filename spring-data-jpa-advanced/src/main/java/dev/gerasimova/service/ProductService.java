@@ -107,4 +107,32 @@ public class ProductService {
                 .map(entityMapper::toDto)
                 .toList();
     }
+    /**
+     * Возвращает список товаров по части названия товара без учета регистра и по id категории.
+     *
+     * @param searchText - часть названия
+     * @param categoryId - id категории
+     * @return список товаров
+     * @see ProductRepository#findProductsByNameAndCategory(String, Long)
+     */
+    public List<ProductResponseDto> searchByTitleAndCategory(String searchText, Long categoryId) {
+        return productRepository.findProductsByNameAndCategory(searchText, categoryId).stream()
+                .map(entityMapper::toDto)
+                .toList();
+    }
+    /**
+     * Метод для получения списка товаров/списка товаров конкретной категории
+     *
+     * @return - список товаров или пустой список.
+     */
+    public List<ProductResponseDto> searchProducts(Long categoryId, String title) {
+        boolean hasCategory = categoryId != null;
+        boolean hasTitle = title != null && !title.isBlank();
+
+        if (hasCategory && hasTitle) {
+            return searchByTitleAndCategory(title, categoryId);
+        } else {
+            return getAllProducts();
+        }
+    }
 }
