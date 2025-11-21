@@ -10,6 +10,7 @@ import dev.gerasimova.model.Product;
 import dev.gerasimova.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -79,6 +80,7 @@ public class ProductService {
      * @see ProductRepository#save(Object)
      */
     @Transactional
+    @CacheEvict(value = "products", key = "#id")
     public ProductResponseDto updateProduct(UpdateProductDto dto, Long id) {
         Product existingProduct = findProductById(id);
         Category category = categoryService.findCategoryById(dto.categoryID())
@@ -98,6 +100,7 @@ public class ProductService {
      * @see ProductRepository#delete(Object)
      */
     @Transactional
+    @CacheEvict(value = "products", key = "#id")
     public void deleteProduct(Long id) {
         productRepository.delete(findProductById(id));
     }
