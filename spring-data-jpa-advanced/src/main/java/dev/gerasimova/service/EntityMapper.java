@@ -1,5 +1,8 @@
 package dev.gerasimova.service;
 
+import dev.gerasimova.dto.CreateReviewDto;
+import dev.gerasimova.dto.ProductReviewDto;
+import dev.gerasimova.model.ProductReview;
 import org.springframework.stereotype.Component;
 import dev.gerasimova.model.Product;
 import dev.gerasimova.model.Category;
@@ -43,6 +46,37 @@ public class EntityMapper {
         return Product.builder()
                 .name(dto.name())
                 .price(dto.price())
+                .build();
+    }
+    /**
+     * Преобразует DTO создания отзыва в сущность отзыва.
+     *
+     * @param dto DTO с данными для создания отзыва
+     * @return сущность отзыва
+     */
+    public ProductReview toEntity(CreateReviewDto dto) {
+        return ProductReview.builder()
+                .productId(dto.productId())
+                .rating(dto.rating())
+                .comment(dto.comment())
+                .author(dto.author())
+                .build();
+    }
+    /**
+     * Преобразует сущность отзыва в DTO для ответа.
+     * Включает основные данные отзыва и название продукта.
+     *
+     * @param productName название продукта, на который делают отзыв
+     * @param productReview сущность отзыва
+     * @return ProductReviewDto с данными отзыва для ответа клиенту
+     */
+    public ProductReviewDto toDto(ProductReview productReview, String productName) {
+        return ProductReviewDto.builder()
+                .productId(productReview.getProductId())
+                .productName(productName)
+                .rating(productReview.getRating())
+                .comment(productReview.getComment())
+                .author(productReview.getAuthor())
                 .build();
     }
 }
