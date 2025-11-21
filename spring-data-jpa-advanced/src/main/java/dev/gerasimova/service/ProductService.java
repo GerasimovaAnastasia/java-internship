@@ -9,7 +9,10 @@ import dev.gerasimova.model.Category;
 import dev.gerasimova.model.Product;
 import dev.gerasimova.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 /**
@@ -20,7 +23,9 @@ import java.util.List;
  * @see dev.gerasimova.repository.ProductRepository
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
@@ -31,8 +36,9 @@ public class ProductService {
      *
      * @param id идентификатор товара для поиска
      * @return выводит дто для пользователей с информацией о продукте
-     * @see ProductRepository#findById(Object)
+     * @see ProductRepository#findByProductId(Long)
      */
+    @Cacheable(value = "products", key = "#id")
     public ProductResponseDto getProductById(Long id) {
         Product product = findProductById(id);
         return entityMapper.toDto(product);
@@ -43,13 +49,12 @@ public class ProductService {
      *
      * @param id идентификатор продукта для поиска
      * @return продукт
-     * @see ProductRepository#findById(Object)
+     * @see ProductRepository#findByProductId(Long)
      */
     public Product findProductById(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByProductId(id)
                 .orElseThrow(() -> new ProductException(id));
     }
-
     /**
      * Сохраняет или обновляет товар в хранилище.
      *
@@ -57,6 +62,7 @@ public class ProductService {
      * @return дто товара
      * @see ProductRepository#save(Object)
      */
+    @Transactional
     public ProductResponseDto saveProduct(CreateProductDto dto) {
         Category category = categoryService.findCategoryById(dto.categoryID())
                 .orElseThrow(() -> new CategoryException(dto.categoryID()));
@@ -65,7 +71,6 @@ public class ProductService {
         Product savedProduct = productRepository.save(product);
         return entityMapper.toDto(savedProduct);
     }
-
     /**
      * Обновляет продукт в хранилище.
      *
@@ -73,6 +78,7 @@ public class ProductService {
      * @return дто сохраненной продукта
      * @see ProductRepository#save(Object)
      */
+    @Transactional
     public ProductResponseDto updateProduct(UpdateProductDto dto, Long id) {
         Product existingProduct = findProductById(id);
         Category category = categoryService.findCategoryById(dto.categoryID())
@@ -85,13 +91,13 @@ public class ProductService {
         Product savedProduct = productRepository.save(existingProduct);
         return entityMapper.toDto(savedProduct);
     }
-
     /**
      * Удаляет товар из хранилища.
      *
      * @param id - уникальный идентификатор товар для удаления
      * @see ProductRepository#delete(Object)
      */
+    @Transactional
     public void deleteProduct(Long id) {
         productRepository.delete(findProductById(id));
     }

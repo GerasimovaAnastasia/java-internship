@@ -4,6 +4,7 @@ import dev.gerasimova.model.Category;
 import dev.gerasimova.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import java.util.Optional;
 **/
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class CategoryService {
    private final CategoryRepository categoryRepository;
     /**
@@ -39,6 +41,7 @@ public class CategoryService {
      * @return сохраненную категорию
      * @see CategoryRepository#save(Object)
      */
+    @Transactional
     public Category saveCategory(Category category) {
         return categoryRepository.save(category);
     }
@@ -49,6 +52,7 @@ public class CategoryService {
      * @param category категория для удаления
      * @see CategoryRepository#delete(Object)
      */
+    @Transactional
     public void deleteCategory(Category category) {
         categoryRepository.delete(category);
     }

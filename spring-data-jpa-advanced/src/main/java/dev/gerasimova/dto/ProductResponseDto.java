@@ -3,6 +3,8 @@ package dev.gerasimova.dto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 
+import java.io.Serializable;
+
 /**
  * DTO товара для демонстрации данных пользователю.
  * Содержит информацию о товаре: название, название категории, цену.
@@ -14,5 +16,5 @@ public record ProductResponseDto(@Schema(description = "Название тов�
                                  @Schema(description = "Название категории", example = "Мебель")
                            String nameCategory,
                                  @Schema(description = "Цена книги в рублях", example = "1400.0")
-                           Double price) {
+                           Double price) implements Serializable {
 }

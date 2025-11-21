@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 
+import java.io.Serializable;
+
 /**
  * DTO товара для сохранения данных из запроса.
  * Содержит информацию о товаре: название, id категории, цену
@@ -24,5 +26,5 @@ public record UpdateProductDto(
         @NotNull(message = "Цена обязательна")
         @PositiveOrZero(message = "Цена не может быть отрицательной")
         Double price
-) {
+) implements Serializable {
 }
