@@ -1,8 +1,8 @@
 package dev.gerasimova.service;
 
-import dev.gerasimova.dto.CreateProductDto;
 import dev.gerasimova.dto.ProductResponseDto;
 import dev.gerasimova.dto.UpdateProductDto;
+import dev.gerasimova.dto.CreateProductDto;
 import dev.gerasimova.exception.CategoryException;
 import dev.gerasimova.exception.ProductException;
 import dev.gerasimova.model.Category;
@@ -24,7 +24,6 @@ import java.util.List;
  * @see dev.gerasimova.repository.ProductRepository
  */
 @Service
-@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProductService {

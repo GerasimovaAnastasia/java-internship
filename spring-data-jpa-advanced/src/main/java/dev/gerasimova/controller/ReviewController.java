@@ -76,7 +76,6 @@ public class ReviewController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    @Parameter(name = "dto", description = "DTO отзыва для сохранения")
     @PostMapping("/reviews")
     public ResponseEntity<ProductReviewDto> createReview(@Valid @RequestBody CreateReviewDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(productReviewService.addReview(dto));

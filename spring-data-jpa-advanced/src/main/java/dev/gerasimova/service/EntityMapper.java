@@ -1,13 +1,17 @@
 package dev.gerasimova.service;
 
-import dev.gerasimova.dto.CreateReviewDto;
+import dev.gerasimova.dto.ProductDetailsDto;
+import dev.gerasimova.dto.ProductResponseDto;
 import dev.gerasimova.dto.ProductReviewDto;
+import dev.gerasimova.dto.CreateReviewDto;
+import dev.gerasimova.dto.CreateProductDto;
 import dev.gerasimova.model.ProductReview;
 import org.springframework.stereotype.Component;
 import dev.gerasimova.model.Product;
 import dev.gerasimova.model.Category;
-import dev.gerasimova.dto.ProductResponseDto;
-import dev.gerasimova.dto.CreateProductDto;
+
+import java.util.List;
+
 /**
  * Компонент для преобразования между сущностями и DTO.
  * Обеспечивает маппинг данных между сервисным слоем и API.
@@ -64,19 +68,34 @@ public class EntityMapper {
     }
     /**
      * Преобразует сущность отзыва в DTO для ответа.
-     * Включает основные данные отзыва и название продукта.
+     * Включает основные данные отзыва.
      *
-     * @param productName название продукта, на который делают отзыв
      * @param productReview сущность отзыва
      * @return ProductReviewDto с данными отзыва для ответа клиенту
      */
-    public ProductReviewDto toDto(ProductReview productReview, String productName) {
+    public ProductReviewDto toDto(ProductReview productReview) {
         return ProductReviewDto.builder()
                 .productId(productReview.getProductId())
-                .productName(productName)
                 .rating(productReview.getRating())
                 .comment(productReview.getComment())
                 .author(productReview.getAuthor())
                 .build();
     }
+    /**
+     * Преобразует дто отзыва и дто продукта в DTO для вывода детальной информации.
+     * Включает основные данные отзывов на продукт и данные о продукте.
+     *
+     * @param productResponseDto дто продукта
+     * @param productReviewList список дто отзывов на продукт
+     * @return ProductDetailsDto с развернутыми данными о продукте и отзывах.
+     */
+    public ProductDetailsDto toDto(ProductResponseDto productResponseDto, List<ProductReviewDto> productReviewList) {
+        return ProductDetailsDto.builder()
+                .name(productResponseDto.title())
+                .categoryName(productResponseDto.nameCategory())
+                .price(productResponseDto.price())
+                .reviewList(productReviewList)
+                .build();
+    }
+
 }

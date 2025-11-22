@@ -12,8 +12,6 @@ import java.io.Serializable;
 @Builder
 public record ProductReviewDto(@Schema(description = "Id продукта", example = "1")
                                Long productId,
-                               @Schema(description = "Название товара", example = "Стул")
-                               String productName,
                                @Schema(description = "Рейтинг продукта", example = "1-5")
                                int rating,
                                @Schema(description = "Комментарий", example = "Отличный товар!")
