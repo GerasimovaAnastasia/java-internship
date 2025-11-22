@@ -4,6 +4,7 @@ import dev.gerasimova.model.Author;
 import dev.gerasimova.repository.AuthorRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,6 +18,7 @@ import java.util.Optional;
 **/
  @Service
  @RequiredArgsConstructor
+ @Transactional(readOnly = true)
 public class AuthorService {
     private final AuthorRepository authorRepository;
     /**
@@ -38,6 +40,7 @@ public class AuthorService {
      * @return предыдущую версию автора или null если автора не было
      * @see AuthorRepository#save(Object)
      */
+    @Transactional
     public Author saveAuthor(Author author) {
         return authorRepository.save(author);
     }
@@ -47,6 +50,7 @@ public class AuthorService {
      * @param author автор для удаления
      * @see AuthorRepository#delete(Object)
      */
+    @Transactional
     public void deleteAuthor(Author author) {
         authorRepository.delete(author);
     }

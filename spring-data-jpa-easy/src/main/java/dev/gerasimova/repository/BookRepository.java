@@ -18,6 +18,8 @@ import java.util.Optional;
  */
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long> {
+    @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE b.title = :title")
+    Optional<Book> findByTitle(@Param("title") String title);
 
     @Query("SELECT b FROM Book b JOIN FETCH b.author")
     List<Book> findAllWithAuthor();

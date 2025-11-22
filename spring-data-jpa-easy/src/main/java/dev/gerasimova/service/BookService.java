@@ -9,11 +9,10 @@ import dev.gerasimova.exception.BookException;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-
+import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -27,6 +26,7 @@ import java.util.Optional;
  */
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BookService {
     private final BookRepository bookRepository;
     private final AuthorService authorService;
@@ -61,6 +61,7 @@ public class BookService {
      * @return дто сохраненной книги
      * @see BookRepository#save(Object)
      */
+    @Transactional
     public BookResponseDto saveBook(CreateBookDto dto) {
         Author author = authorService.findAuthorById(dto.authorID())
                 .orElseThrow(() -> new AuthorException(dto.authorID()));
@@ -76,6 +77,7 @@ public class BookService {
      * @return дто сохраненной книги
      * @see BookRepository#save(Object)
      */
+    @Transactional
     public BookResponseDto updateBook(UpdateBookDto dto, Long id) {
         Book existingBook = findBookById(id);
         Author author = authorService.findAuthorById(dto.authorID())
@@ -95,6 +97,7 @@ public class BookService {
      * @param id уникальный идентификатор книги для удаления
      * @see BookRepository#delete(Object)
      */
+    @Transactional
     public void deleteBook(Long id) {
         bookRepository.delete(findBookById(id));
     }
@@ -116,6 +119,18 @@ public class BookService {
      */
     public List<Book> findByAuthor(String authorSurname) {
         return bookRepository.findByAuthorSurname(authorSurname);
+    }
+    /**
+     * Возвращает книгу по названию из бд.
+     *
+     * @param title - название книги
+     * @return найденная книга
+     * @throws BookException - если книги с заданным названием не существует
+     * @see BookRepository#findByTitle(String)
+     */
+    public Book findByTitle(String title) {
+        return bookRepository.findByTitle(title).orElseThrow(
+                ()-> new BookException("Книги с названием " + title +" не существует"));
     }
     /**
      * Возвращает книгу конкретного автора с заданным названием из бд.
@@ -149,7 +164,7 @@ public class BookService {
      * @return дто с новой книгой
      * @throws AuthorException - если автор уже существует
      */
-    @Transactional(rollbackOn = Exception.class)
+    @Transactional()
     public BookResponseDto createBookWithAuthor(CreateBookWithAuthorDto dto) {
         if (authorService.existsByNameAndSurname(dto.authorName(), dto.authorSurname())) {
             throw new AuthorException("Автор уже существует: " + dto.authorName() + " " + dto.authorSurname());
@@ -186,6 +201,8 @@ public class BookService {
             return findByAuthor(authorSurname).stream()
                     .map(entityMapper::toDto)
                     .toList();
+        } else if (hasTitle) {
+            return List.of(entityMapper.toDto(findByTitle(title)));
         } else {
             return getAllBooks().stream()
                     .map(entityMapper::toDto)

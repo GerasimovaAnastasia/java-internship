@@ -1,6 +1,7 @@
 package dev.gerasimova.controller;
 
 import dev.gerasimova.dto.ErrorResponse;
+import dev.gerasimova.dto.ValidationErrorResponse;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import lombok.extern.slf4j.Slf4j;
@@ -11,8 +12,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 
 /**
@@ -39,17 +40,21 @@ public class GlobalExceptionHandler {
      * Обрабатывает ошибки валидации @Valid.
      *
      * @param ex исключение MethodArgumentNotValidException
-     * @return ResponseEntity с ошибкой 400 и деталями валидации
+     * @return дто ValidationErrorResponse с ошибкой 400 и деталями валидации
      */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
-        String errorMessage = ex.getFieldErrors()
+    public ResponseEntity<ValidationErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        List<ValidationErrorResponse.FieldError> errors = ex.getBindingResult()
+                .getFieldErrors()
                 .stream()
-                .map(error -> error.getField() + ": " + error.getDefaultMessage())
-                .collect(Collectors.joining(", "));
+                .map(error -> new ValidationErrorResponse.FieldError(
+                        error.getField(),
+                        error.getDefaultMessage()
+                ))
+                .toList();
 
-        ErrorResponse error = new ErrorResponse("Ошибка валидации: " + errorMessage);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        ValidationErrorResponse response = new ValidationErrorResponse(errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     /**

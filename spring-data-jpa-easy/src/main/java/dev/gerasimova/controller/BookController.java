@@ -1,10 +1,6 @@
 package dev.gerasimova.controller;
 
-import dev.gerasimova.dto.ErrorResponse;
-import dev.gerasimova.dto.BookResponseDto;
-import dev.gerasimova.dto.CreateBookWithAuthorDto;
-import dev.gerasimova.dto.CreateBookDto;
-import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.dto.*;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.BookService;
@@ -101,7 +97,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Невалидные данные книги",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "409",
@@ -141,7 +137,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Невалидные данные книги",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
 
             ),
             @ApiResponse(
@@ -210,6 +206,12 @@ public class BookController {
                     responseCode = "500",
                     description = "Ошибка сервера",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Невалидные данные книги или автора",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
+
             ),
             @ApiResponse(
                     responseCode = "409",
