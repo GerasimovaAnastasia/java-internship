@@ -44,9 +44,6 @@ public class ProductReviewService {
     @Cacheable(value = "reviews", key = "#productId")
     public List<ProductReviewDto> getReviewsForProduct(Long productId) {
         List<ProductReview> reviewList = reviewRepository.findByProductId(productId);
-        if (reviewList.isEmpty()) {
-            return List.of();
-        }
         return reviewList.stream()
                 .map(entityMapper::toDto)
                 .toList();

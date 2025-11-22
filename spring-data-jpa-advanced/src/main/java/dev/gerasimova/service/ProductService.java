@@ -139,8 +139,11 @@ public class ProductService {
 
         if (hasCategory && hasTitle) {
             return searchByTitleAndCategory(title, categoryId);
-        } else {
+        }
+        else if(!hasTitle && !hasCategory) {
             return getAllProducts();
+        } else {
+            throw new IllegalArgumentException("Укажите оба параметра или ни одного");
         }
     }
 }
