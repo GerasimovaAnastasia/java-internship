@@ -1,6 +1,8 @@
 package dev.gerasimova.repository;
 
 import dev.gerasimova.model.Book;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -17,14 +19,13 @@ import java.util.Optional;
  * @see Book
  */
 @Repository
-public interface BookRepository extends JpaRepository<Book, Long> {
+public interface BookRepository extends JpaRepository<Book, Long>  {
     @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE b.title = :title")
-    Optional<Book> findByTitle(@Param("title") String title);
-
+    Page<Book> findByTitle(@Param("title") String title, Pageable pageable);
     @Query("SELECT b FROM Book b JOIN FETCH b.author")
-    List<Book> findAllWithAuthor();
+    Page<Book> findAllBook(Pageable pageable);
     @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE b.author.surname = :surname")
-    List<Book> findByAuthorSurname(@Param("surname") String authorSurname);
+    Page<Book> findByAuthorSurname(@Param("surname") String authorSurname, Pageable pageable);
 
     @Query("SELECT b FROM Book b JOIN FETCH b.author WHERE b.author.surname = :surname AND " +
             "b.title = :title")

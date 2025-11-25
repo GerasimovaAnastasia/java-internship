@@ -7,13 +7,18 @@ import dev.gerasimova.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +31,7 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class BookController {
     private final BookService bookService;
 
@@ -55,7 +61,7 @@ public class BookController {
     }
     /**
      * Endpoint для получения списка книг/списка книг конкретного автора/
-     * конкретной книги по названию и автору.
+     * конкретной книги по названию и автору с пагинацией.
      *
      * @return - List с одной книгой (по автору и названию)
      *      - Пустой список
@@ -76,9 +82,26 @@ public class BookController {
             )
     })
     @GetMapping("/books/search")
-    public ResponseEntity<List<BookResponseDto>> searchBook(@RequestParam(required = false) String authorSurname,
-                                        @RequestParam(required = false) String title) {
-        return ResponseEntity.ok(bookService.searchBook(authorSurname, title));
+    public ResponseEntity<Page<BookResponseDto>> searchBook(@Parameter(description = "Фамилия автора")
+                                                                 @RequestParam(required = false) String authorSurname,
+
+                                                             @Parameter(description = "Название книги")
+                                                                 @RequestParam(required = false) String title,
+
+                                                             @Parameter(description = "Номер страницы")
+                                                                @RequestParam(defaultValue = "0") @Min(0) int page,
+
+                                                             @Parameter(description = "Размер страницы")
+                                                                 @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
+
+                                                             @Parameter(description = "Сортировка", examples = {
+                                                                     @ExampleObject(name = "По названию", value = "title"),
+                                                                     @ExampleObject(name = "По цене DESC", value = "price,desc"),
+                                                                     @ExampleObject(name = "По автору ASC", value = "author,asc")
+                                                             })
+                                                                 @RequestParam(required = false) String sort) {
+
+        return ResponseEntity.ok(bookService.searchBook(authorSurname, title, bookService.convertURLtoPageable(page, size, sort)));
     }
     /**
      * Endpoint для сохранения новой книги в хранилище.
@@ -223,4 +246,5 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBookWithAuthor(@Valid @RequestBody CreateBookWithAuthorDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBookWithAuthor(dto));
     }
+
 }

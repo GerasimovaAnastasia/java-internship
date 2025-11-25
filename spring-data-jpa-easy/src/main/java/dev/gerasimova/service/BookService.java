@@ -11,11 +11,10 @@ import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Сервисный класс для управления бизнес-логикой работы с книгами.
@@ -38,7 +37,6 @@ public class BookService {
      *
      * @param id идентификатор книги для поиска
      * @return выводит дто для пользователей с информацией о книге
-     * @see BookRepository#findById(Object)
      */
     public BookResponseDto getBookById(Long id) {
         Book book = findBookById(id);
@@ -49,7 +47,6 @@ public class BookService {
      *
      * @param id идентификатор книги для поиска
      * @return Book, если книга найдена или выбрасывает исключение BookException()
-     * @see BookRepository#findById(Object)
      */
     public Book findBookById(Long id) {
         return bookRepository.findById(id).orElseThrow(() -> new BookException(id));
@@ -105,20 +102,20 @@ public class BookService {
      * Возвращает список всех книг из хранилища.
      *
      * @return список всех книг, может быть пустым
-     * @see BookRepository#findAll()
+     * @see BookRepository#findAllBook(Pageable)
      */
-    public List<Book> getAllBooks() {
-        return bookRepository.findAllWithAuthor();
+    public Page<Book> getAllBooks(Pageable pageable) {
+        return bookRepository.findAllBook(pageable);
     }
     /**
      * Возвращает список всех книг конкретного автора из бд.
      *
      * @param authorSurname - фамилия автора
      * @return список всех книг конкретного автора, может быть пустым
-     * @see BookRepository#findByAuthorSurname(String)
+     * @see BookRepository#findByAuthorSurname(String, Pageable)
      */
-    public List<Book> findByAuthor(String authorSurname) {
-        return bookRepository.findByAuthorSurname(authorSurname);
+    public Page<Book> findByAuthor(String authorSurname,Pageable pageable ) {
+        return bookRepository.findByAuthorSurname(authorSurname, pageable);
     }
     /**
      * Возвращает книгу по названию из бд.
@@ -126,11 +123,10 @@ public class BookService {
      * @param title - название книги
      * @return найденная книга
      * @throws BookException - если книги с заданным названием не существует
-     * @see BookRepository#findByTitle(String)
+     * @see BookRepository#findByTitle(String, Pageable)
      */
-    public Book findByTitle(String title) {
-        return bookRepository.findByTitle(title).orElseThrow(
-                ()-> new BookException("Книги с названием " + title +" не существует"));
+    public Page<Book> findByTitle(String title, Pageable pageable) {
+        return bookRepository.findByTitle(title, pageable);
     }
     /**
      * Возвращает книгу конкретного автора с заданным названием из бд.
@@ -138,10 +134,11 @@ public class BookService {
      * @param author - автор
      * @param title - название книги
      * @return книга найденная по названию и автору
-     * @see BookRepository#findByTitleAndAuthorSurname(String title, String author)
+     * @see BookRepository#findByTitleAndAuthorSurname(String, String)
      */
-    public Optional<Book> findByTitleAndAuthor(String title, String author) {
-        return bookRepository.findByTitleAndAuthorSurname(title, author);
+    public Book findByTitleAndAuthor(String title, String author) {
+        return bookRepository.findByTitleAndAuthorSurname(title, author)
+                .orElseThrow(()-> new BookException("Книги с названием " + title + "и автором "+ author +" не существует"));
     }
     /**
      * Возвращает список книг по части названия книги без учета регистра и сортирует их по году издания.
@@ -188,25 +185,61 @@ public class BookService {
      *
      * @return - список книг или одну книг при поиске по автору и названию или пустой список.
      */
-    public List<BookResponseDto> searchBook(String authorSurname, String title) {
+    public Page<BookResponseDto> searchBook(String authorSurname, String title, Pageable pageable) {
         boolean hasAuthor = authorSurname != null && !authorSurname.isBlank();
         boolean hasTitle = title != null && !title.isBlank();
 
         if (hasAuthor && hasTitle) {
-            return findByTitleAndAuthor(title, authorSurname)
-                    .map(entityMapper::toDto)
-                    .map(List::of)
-                    .orElse(Collections.emptyList());
+            List<Book> list = List.of(findByTitleAndAuthor(title, authorSurname));
+            Page<Book> bookPage = new PageImpl<>(list, pageable, list.size());
+            return bookPage
+                    .map(entityMapper::toDto);
         } else if (hasAuthor) {
-            return findByAuthor(authorSurname).stream()
-                    .map(entityMapper::toDto)
-                    .toList();
+            return findByAuthor(authorSurname, pageable)
+                    .map(entityMapper::toDto);
         } else if (hasTitle) {
-            return List.of(entityMapper.toDto(findByTitle(title)));
+            return findByTitle(title, pageable)
+                    .map(entityMapper::toDto);
         } else {
-            return getAllBooks().stream()
-                    .map(entityMapper::toDto)
-                    .toList();
+            return getAllBooks(pageable)
+                    .map(entityMapper::toDto);
         }
+    }
+    /**
+     * Преобразует параметры URL в объект Pageable для пагинации и сортировки.
+     * Используется для создания объекта пагинации на основе параметров HTTP-запроса.
+     *
+     * @param page номер страницы (начинается с 0)
+     * @param size количество элементов на странице
+     * @param sort строка сортировки в формате "поле,направление" или просто "поле"
+     * @return объект Pageable с настройками пагинации и сортировки
+     * @see Pageable
+     * @see PageRequest
+     */
+    public Pageable convertURLtoPageable(int page, int size, String sort) {
+        Sort sortObj = (sort != null && !sort.isBlank())
+                ? parseSort(sort)
+                : Sort.unsorted();
+       return PageRequest.of(page, size, sortObj);
+    }
+    /**
+     * Парсит строку сортировки в объект Sort.
+     * Поддерживает два формата: простое поле ("title") и поле с направлением ("price,desc").
+     *
+     * @param sort строка для парсинга, может быть null или пустой
+     * @return объект Sort, либо Sort.unsorted() если строка пустая
+     * @see Sort
+     */
+    private Sort parseSort(String sort) {
+        if (sort == null || sort.isBlank()) {
+            return Sort.unsorted();
+        }
+        if (sort.contains(",")) {
+            String[] parts = sort.split(",");
+            if (parts.length == 2) {
+                return Sort.by(Sort.Direction.fromString(parts[1]), parts[0]);
+            }
+        }
+        return Sort.by(sort);
     }
 }
