@@ -9,7 +9,7 @@ import org.springframework.web.client.RestTemplate;
  * и взаимодействия с внешними API.
  */
 @Configuration
-public class AppConfig {
+public class RestTemplateConfig {
     /**
      * Создает и настраивает бин RestTemplate для выполнения HTTP-запросов.
      * RestTemplate используется для взаимодействия с внешними REST API сервисами.

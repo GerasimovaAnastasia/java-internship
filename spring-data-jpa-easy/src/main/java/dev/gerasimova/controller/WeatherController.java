@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 /**
@@ -36,4 +37,17 @@ public class WeatherController {
     public ResponseEntity<Map<String, Object>> getDetailedWeather(@PathVariable String city) {
         return ResponseEntity.ok(weatherService.getWeatherJson(city));
     }
+    /**
+     * Возвращает текстовое представление погоды в асинхронном режиме.
+     * Метод не блокирует поток выполнения пока ожидает ответ от внешнего API.
+     *
+     * @param city название города
+     * @return Mono с текстовым представлением погоды
+     */
+    @Operation(summary = "Получить погоду в текстовом формате (асинхронно)")
+    @GetMapping("/{city}/text")
+    public Mono<String> getWeatherText(@PathVariable String city) {
+        return weatherService.getWeatherText(city);
+    }
+
 }

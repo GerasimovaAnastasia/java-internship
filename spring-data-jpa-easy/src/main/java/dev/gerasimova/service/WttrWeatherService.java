@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 /**
@@ -18,6 +20,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class WttrWeatherService {
     private final RestTemplate restTemplate;
+    private final WebClient webClient;
     @Value("${demoUrl}")
     private String API_URL;
     /**
@@ -33,5 +36,18 @@ public class WttrWeatherService {
         String url = API_URL + city + "?format=j1";
         System.out.println(url);
         return restTemplate.getForObject(url, Map.class);
+    }
+    /**
+     * Получает данные о погоде в асинхронном режиме.
+     * Возвращает Mono<String> который содержит результат или ошибку.
+     *
+     * @param city название города для запроса погоды
+     * @return Mono с текстовым представлением погоды
+     */
+    public Mono<String> getWeatherText(String city) {
+        return webClient.get()
+                .uri("/{city}?format=3", city)
+                .retrieve()
+                .bodyToMono(String.class);
     }
 }
