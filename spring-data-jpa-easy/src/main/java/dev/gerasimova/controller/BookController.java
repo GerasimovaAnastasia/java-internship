@@ -1,6 +1,11 @@
 package dev.gerasimova.controller;
 
-import dev.gerasimova.dto.*;
+import dev.gerasimova.dto.CreateBookDto;
+import dev.gerasimova.dto.BookResponseDto;
+import dev.gerasimova.dto.ErrorResponse;
+import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.dto.ValidationErrorResponse;
+import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.BookService;
@@ -19,7 +24,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 

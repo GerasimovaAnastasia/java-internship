@@ -6,12 +6,18 @@ import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
+import dev.gerasimova.mapper.AuthorMapper;
+import dev.gerasimova.mapper.BookMapper;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -29,7 +35,8 @@ import java.util.List;
 public class BookService {
     private final BookRepository bookRepository;
     private final AuthorService authorService;
-    private final EntityMapper entityMapper;
+    private final BookMapper bookMapper;
+    private final AuthorMapper authorMapper;
     @Value("${testTask10}")
     private boolean test;
     /**
@@ -40,7 +47,7 @@ public class BookService {
      */
     public BookResponseDto getBookById(Long id) {
         Book book = findBookById(id);
-        return entityMapper.toDto(book);
+        return bookMapper.toBookResponseDto(book);
     }
     /**
      * Находит книгу по идентификатору.
@@ -62,10 +69,10 @@ public class BookService {
     public BookResponseDto saveBook(CreateBookDto dto) {
         Author author = authorService.findAuthorById(dto.authorID())
                 .orElseThrow(() -> new AuthorException(dto.authorID()));
-        Book book = entityMapper.toEntity(dto);
+        Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
-        return entityMapper.toDto(savedBook);
+        return bookMapper.toBookResponseDto(savedBook);
     }
     /**
      * Обновляет книгу в хранилище.
@@ -86,7 +93,7 @@ public class BookService {
         existingBook.setPrice(dto.price());
 
         Book savedBook = bookRepository.save(existingBook);
-        return entityMapper.toDto(savedBook);
+        return bookMapper.toBookResponseDto(savedBook);
     }
     /**
      * Удаляет книгу из хранилища.
@@ -149,7 +156,7 @@ public class BookService {
      */
     public List<BookResponseDto> searchByTitleOrderByYear(String searchText) {
         return bookRepository.searchByTitleOrderByYear(searchText).stream()
-                .map(entityMapper::toDto)
+                .map(bookMapper::toBookResponseDto)
                 .toList();
     }
 
@@ -166,7 +173,7 @@ public class BookService {
         if (authorService.existsByNameAndSurname(dto.authorName(), dto.authorSurname())) {
             throw new AuthorException("Автор уже существует: " + dto.authorName() + " " + dto.authorSurname());
         }
-        Author saveAuthor = authorService.saveAuthor(entityMapper.toEntity(dto));
+        Author saveAuthor = authorService.saveAuthor(authorMapper.toAuthor(dto));
         if (test) {
             throw new RuntimeException("Тест отката транзакции!");
         }
@@ -177,7 +184,7 @@ public class BookService {
                 .date(dto.yearRelease())
                 .build();
 
-        return entityMapper.toDto(bookRepository.save(book));
+        return bookMapper.toBookResponseDto(bookRepository.save(book));
     }
     /**
      * Метод для получения списка книг/списка книг конкретного автора/
@@ -193,16 +200,16 @@ public class BookService {
             List<Book> list = List.of(findByTitleAndAuthor(title, authorSurname));
             Page<Book> bookPage = new PageImpl<>(list, pageable, list.size());
             return bookPage
-                    .map(entityMapper::toDto);
+                    .map(bookMapper::toBookResponseDto);
         } else if (hasAuthor) {
             return findByAuthor(authorSurname, pageable)
-                    .map(entityMapper::toDto);
+                    .map(bookMapper::toBookResponseDto);
         } else if (hasTitle) {
             return findByTitle(title, pageable)
-                    .map(entityMapper::toDto);
+                    .map(bookMapper::toBookResponseDto);
         } else {
             return getAllBooks(pageable)
-                    .map(entityMapper::toDto);
+                    .map(bookMapper::toBookResponseDto);
         }
     }
     /**
