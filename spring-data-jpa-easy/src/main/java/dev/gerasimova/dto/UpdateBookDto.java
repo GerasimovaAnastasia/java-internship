@@ -1,11 +1,12 @@
 package dev.gerasimova.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
-
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
 /**
  * DTO книги для сохранения данных из запроса.
  * Содержит информацию о книге: название, id автора, цену, год выпуска.
@@ -15,6 +16,7 @@ import jakarta.validation.constraints.PositiveOrZero;
 public record UpdateBookDto(
         @Schema(description = "Название книги", example = "Война и мир")
         @NotBlank(message = "Название обязательно")
+        @Size(min = 3, max = 100, message = "Название должно быть от 3 до 100 символов")
         String title,
         @Schema(description = "ID автора книги", example = "1")
         @NotNull(message = "ID автора обязателен")
@@ -26,7 +28,7 @@ public record UpdateBookDto(
         Double price,
         @Schema(description = "Год выпуска книги", example = "2013")
         @NotNull(message = "Год обязателен")
-        @PositiveOrZero(message = "Год не может быть отрицательным")
+        @Min(value = 1900, message = "Минимальный год 1900")
         Integer yearRelease
 ) {
 }

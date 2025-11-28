@@ -1,10 +1,12 @@
 package dev.gerasimova.controller;
 
-import dev.gerasimova.dto.ErrorResponse;
-import dev.gerasimova.dto.BookResponseDto;
-import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.CreateBookDto;
+import dev.gerasimova.dto.BookResponseDto;
+import dev.gerasimova.dto.ErrorResponse;
 import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.dto.ValidationErrorResponse;
+import dev.gerasimova.dto.CreateBookWithAuthorDto;
+import dev.gerasimova.dto.PaginationParam;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.BookService;
@@ -16,9 +18,18 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -30,6 +41,7 @@ import java.util.List;
  */
 @RestController
 @RequiredArgsConstructor
+@Validated
 public class BookController {
     private final BookService bookService;
 
@@ -59,7 +71,7 @@ public class BookController {
     }
     /**
      * Endpoint для получения списка книг/списка книг конкретного автора/
-     * конкретной книги по названию и автору.
+     * конкретной книги по названию и автору с пагинацией.
      *
      * @return - List с одной книгой (по автору и названию)
      *      - Пустой список
@@ -80,9 +92,16 @@ public class BookController {
             )
     })
     @GetMapping("/books/search")
-    public ResponseEntity<List<BookResponseDto>> searchBook(@RequestParam(required = false) String authorSurname,
-                                        @RequestParam(required = false) String title) {
-        return ResponseEntity.ok(bookService.searchBook(authorSurname, title));
+    public ResponseEntity<Page<BookResponseDto>> searchBook(@Parameter(description = "Фамилия автора")
+                                                                 @RequestParam(required = false) String authorSurname,
+
+                                                             @Parameter(description = "Название книги")
+                                                                 @RequestParam(required = false) String title,
+
+                                                            @Parameter(description = "Параметры пагинации")
+                                                                @Valid PaginationParam pagination) {
+
+        return ResponseEntity.ok(bookService.searchBook(authorSurname, title, pagination));
     }
     /**
      * Endpoint для сохранения новой книги в хранилище.
@@ -101,7 +120,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Невалидные данные книги",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
             ),
             @ApiResponse(
                     responseCode = "409",
@@ -141,7 +160,7 @@ public class BookController {
             @ApiResponse(
                     responseCode = "400",
                     description = "Невалидные данные книги",
-                    content = @Content(schema = @Schema(implementation = ErrorResponse.class))
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
 
             ),
             @ApiResponse(
@@ -212,6 +231,12 @@ public class BookController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             ),
             @ApiResponse(
+                    responseCode = "400",
+                    description = "Невалидные данные книги или автора",
+                    content = @Content(schema = @Schema(implementation = ValidationErrorResponse.class))
+
+            ),
+            @ApiResponse(
                     responseCode = "409",
                     description = "Конфликт сущностей",
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
@@ -221,4 +246,5 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBookWithAuthor(@Valid @RequestBody CreateBookWithAuthorDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBookWithAuthor(dto));
     }
+
 }

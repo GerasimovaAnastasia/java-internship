@@ -38,7 +38,7 @@ public class Book {
     private Author author;
 
     @Schema(description = "Цена книги в рублях", example = "400.0")
-    @Column(nullable = false)
+    @Column(columnDefinition = "NUMERIC(10,2)")
     private Double price;
 
     @Schema(description = "Год выхода книги", example = "2023")
