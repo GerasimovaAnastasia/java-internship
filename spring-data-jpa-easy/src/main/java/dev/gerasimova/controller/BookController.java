@@ -6,19 +6,17 @@ import dev.gerasimova.dto.ErrorResponse;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.dto.ValidationErrorResponse;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
+import dev.gerasimova.dto.PaginationParam;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.BookService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -100,20 +98,10 @@ public class BookController {
                                                              @Parameter(description = "Название книги")
                                                                  @RequestParam(required = false) String title,
 
-                                                             @Parameter(description = "Номер страницы")
-                                                                @RequestParam(defaultValue = "0") @Min(0) int page,
+                                                            @Parameter(description = "Параметры пагинации")
+                                                                @Valid PaginationParam pagination) {
 
-                                                             @Parameter(description = "Размер страницы")
-                                                                 @RequestParam(defaultValue = "10") @Min(1) @Max(100) int size,
-
-                                                             @Parameter(description = "Сортировка", examples = {
-                                                                     @ExampleObject(name = "По названию", value = "title"),
-                                                                     @ExampleObject(name = "По цене DESC", value = "price,desc"),
-                                                                     @ExampleObject(name = "По автору ASC", value = "author,asc")
-                                                             })
-                                                                 @RequestParam(required = false) String sort) {
-
-        return ResponseEntity.ok(bookService.searchBook(authorSurname, title, bookService.convertURLtoPageable(page, size, sort)));
+        return ResponseEntity.ok(bookService.searchBook(authorSurname, title, pagination));
     }
     /**
      * Endpoint для сохранения новой книги в хранилище.

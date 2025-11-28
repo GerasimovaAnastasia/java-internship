@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Min;
  */
 @Schema(description = "DTO книги с автором")
 public record CreateBookWithAuthorDto(@Schema(description = "Название книги", example = "Война и мир")
+                                      @NotBlank(message = "Название обязательно")
                                       @Size(min = 3, max = 100, message = "Название должно быть от 3 до 100 символов")
                                       String title,
                                       @Schema(description = "Имя автора книги", example = "Лев")

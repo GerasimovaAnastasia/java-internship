@@ -4,6 +4,7 @@ import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.CreateBookDto;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.dto.PaginationParam;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.mapper.AuthorMapper;
@@ -55,7 +56,7 @@ public class BookService {
      * @param id идентификатор книги для поиска
      * @return Book, если книга найдена или выбрасывает исключение BookException()
      */
-    public Book findBookById(Long id) {
+    private Book findBookById(Long id) {
         return bookRepository.findById(id).orElseThrow(() -> new BookException(id));
     }
     /**
@@ -192,9 +193,10 @@ public class BookService {
      *
      * @return - список книг или одну книг при поиске по автору и названию или пустой список.
      */
-    public Page<BookResponseDto> searchBook(String authorSurname, String title, Pageable pageable) {
+    public Page<BookResponseDto> searchBook(String authorSurname, String title, PaginationParam paginationParam) {
         boolean hasAuthor = authorSurname != null && !authorSurname.isBlank();
         boolean hasTitle = title != null && !title.isBlank();
+        Pageable pageable = convertURLtoPageable(paginationParam.page(), paginationParam.size(), paginationParam.sort());
 
         if (hasAuthor && hasTitle) {
             List<Book> list = List.of(findByTitleAndAuthor(title, authorSurname));
@@ -223,7 +225,7 @@ public class BookService {
      * @see Pageable
      * @see PageRequest
      */
-    public Pageable convertURLtoPageable(int page, int size, String sort) {
+    private Pageable convertURLtoPageable(int page, int size, String sort) {
         Sort sortObj = (sort != null && !sort.isBlank())
                 ? parseSort(sort)
                 : Sort.unsorted();

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Min;
-
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * DTO книги для сохранения данных из запроса.
@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Min;
  */
 @Schema(description = "DTO книги")
 public record CreateBookDto(@Schema(description = "Название книги", example = "Война и мир")
+                            @NotBlank(message = "Название обязательно")
                             @Size(min = 3, max = 100, message = "Название должно быть от 3 до 100 символов")
                             String title,
                             @Schema(description = "ID автора книги", example = "1")
@@ -25,6 +26,7 @@ public record CreateBookDto(@Schema(description = "Название книги",
                             @PositiveOrZero(message = "Цена не может быть отрицательной")
                             Double price,
                             @Schema(description = "Год выпуска книги", example = "2013")
+                            @NotNull(message = "Год обязателен")
                             @Min(value = 1900, message = "Минимальный год 1900")
                             Integer yearRelease) {
 }
