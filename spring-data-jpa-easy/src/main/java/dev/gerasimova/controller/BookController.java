@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
@@ -40,6 +40,7 @@ import java.util.List;
  * @see Author
  */
 @RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Validated
 public class BookController {
@@ -246,5 +247,4 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBookWithAuthor(@Valid @RequestBody CreateBookWithAuthorDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBookWithAuthor(dto));
     }
-
 }
