@@ -1,8 +1,14 @@
 package dev.gerasimova.controller;
 
+import dev.gerasimova.dto.CreateUserDto;
+import dev.gerasimova.dto.UserResponseDto;
+import dev.gerasimova.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 /**
@@ -13,8 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    @PostMapping()
-    public ResponseEntity<String> register() {
-        return ResponseEntity.ok("Регистрация обязательна!");
+    private final UserService userService;
+    @PostMapping("/register")
+    public ResponseEntity<UserResponseDto> register(@Valid @RequestBody CreateUserDto userDto) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userDto));
     }
 }
