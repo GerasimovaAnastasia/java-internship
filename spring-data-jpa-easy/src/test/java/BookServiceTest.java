@@ -7,9 +7,9 @@ import dev.gerasimova.repository.AuthorRepository;
 import dev.gerasimova.repository.BookRepository;
 import dev.gerasimova.service.AuthorService;
 import dev.gerasimova.service.BookService;
-import dev.gerasimova.utils.JwtTokenProvider;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -38,6 +38,8 @@ public class BookServiceTest {
     private BookMapper bookMapper;
     @Mock
     private AuthorMapper authorMapper;
+    @InjectMocks
+    private BookService bookService;
     /**
      * Проверяет что метод findById корректно находит книгу по id.
      */
@@ -62,8 +64,6 @@ public class BookServiceTest {
         Mockito.when(bookRepository.findById(id)).thenReturn(Optional.of(testBook));
         Mockito.when(bookMapper.toBookResponseDto(testBook)).thenReturn(expectedDto);
 
-        AuthorService authorService = new AuthorService(authorRepository);
-        BookService bookService = new BookService(bookRepository, authorService, bookMapper, authorMapper);
         BookResponseDto result = bookService.getBookById(id);
 
         assertNotNull(result);
