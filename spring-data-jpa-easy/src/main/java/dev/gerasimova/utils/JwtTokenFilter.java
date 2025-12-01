@@ -74,7 +74,6 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BASIC_TOKEN_PREFIX)) {
             return bearerToken.substring(7);
         }
-
         return null;
     }
 }

@@ -9,6 +9,7 @@ import dev.gerasimova.model.User;
 import dev.gerasimova.model.UserRole;
 import dev.gerasimova.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
  * @see dev.gerasimova.model.User
  * @see UserRepository
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
@@ -58,6 +60,7 @@ public class UserService implements UserDetailsService {
         }
         User newUser = userMapper.toUser(dto, password, UserRole.ROLE_USER);
         userRepository.save(newUser);
+        log.info("Сохранение пользователя в БД, права: USER");
         return userMapper.toUserResponseDto(newUser);
     }
     /**
@@ -75,6 +78,7 @@ public class UserService implements UserDetailsService {
         }
         User newUser = userMapper.toUser(dto, password, dto.role());
         userRepository.save(newUser);
+        log.info("Сохранение пользователя в БД, права: %s".formatted(dto.role()));
         return userMapper.toUserResponseDto(newUser);
     }
 }
