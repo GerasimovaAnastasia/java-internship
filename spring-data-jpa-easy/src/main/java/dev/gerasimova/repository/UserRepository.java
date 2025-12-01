@@ -10,7 +10,6 @@ import java.util.Optional;
  * Репозиторий для работы с сущностью User в базе данных.
  * Предоставляет стандартные CRUD-операции через наследование от JpaRepository.
  *
- * @see JpaRepository
  * @see User
  */
 @Repository
