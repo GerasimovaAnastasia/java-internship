@@ -1,6 +1,7 @@
 package dev.gerasimova.service;
 
 import dev.gerasimova.dto.CreateUserDto;
+import dev.gerasimova.dto.CreateUserWithRoleDto;
 import dev.gerasimova.dto.LoginUserDto;
 import dev.gerasimova.dto.UserResponseDto;
 import dev.gerasimova.exception.UserException;
@@ -53,5 +54,19 @@ public class AuthService {
                 new UsernamePasswordAuthenticationToken(dto.username(), dto.password())
         );
         return jwtTokenProvider.generateToken(authentication.getName());
+    }
+    /**
+     * Сохраняет нового пользователя в хранилище с заданными правами.
+     * Хэширует пароль перед сохранением в БД
+     *
+     * @param dto данных пользователя для сохранения
+     * @return дто сохраненного аккаунта пользователя
+     * @throws UserException бросает исключение, если аккаунт с заданным логином уже существует
+     * @see UserRepository#save(Object)
+     */
+    @Transactional
+    public UserResponseDto createUser(CreateUserWithRoleDto dto) {
+        String encodedPassword = passwordEncoder.encode(dto.password());
+        return userService.saveWithRole(dto, encodedPassword);
     }
 }

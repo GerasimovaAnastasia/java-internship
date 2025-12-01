@@ -23,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -96,6 +97,7 @@ public class BookController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/books/search")
     public ResponseEntity<Page<BookResponseDto>> searchBook(@Parameter(description = "Фамилия автора")
                                                                  @RequestParam(required = false) String authorSurname,
@@ -192,6 +194,7 @@ public class BookController {
             @ApiResponse(responseCode = "204", description = "Книга успешно удалена"),
             @ApiResponse(responseCode = "404", description = "Книга не найдена")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
         bookService.deleteBook(id);

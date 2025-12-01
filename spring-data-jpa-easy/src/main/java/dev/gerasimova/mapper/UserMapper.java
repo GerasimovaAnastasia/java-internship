@@ -1,6 +1,7 @@
 package dev.gerasimova.mapper;
 
 import dev.gerasimova.dto.CreateUserDto;
+import dev.gerasimova.dto.CreateUserWithRoleDto;
 import dev.gerasimova.dto.UserResponseDto;
 import dev.gerasimova.model.User;
 import dev.gerasimova.model.UserRole;
@@ -28,4 +29,14 @@ public interface UserMapper {
      */
     @Mapping(target = "username", source = "user.username")
     UserResponseDto toUserResponseDto(User user);
+    /**
+     * Преобразует DTO создания аккаунта пользователя в сущность пользователя.
+     * Включает хэш пароля, роль пользователя.
+     *
+     * @param dto DTO с данными для создания аккаунта
+     * @return сущность пользователя
+     */
+    @Mapping(target = "password", source = "password")
+    @Mapping(target = "role", source = "role")
+    User toUser(CreateUserWithRoleDto dto, String password, UserRole role);
 }

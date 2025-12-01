@@ -4,12 +4,14 @@ import dev.gerasimova.dto.AuthResponse;
 import dev.gerasimova.dto.CreateUserDto;
 import dev.gerasimova.dto.LoginUserDto;
 import dev.gerasimova.dto.UserResponseDto;
+import dev.gerasimova.dto.CreateUserWithRoleDto;
 import dev.gerasimova.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,5 +53,19 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body("Неверный логин или пароль!");
         }
+    }
+    /**
+     * Endpoint осуществляет регистрацию любого нового пользователя в системе.
+     * Доступен только администраторам.
+     * Можно задать роль пользователя.
+     *
+     * @param userDto - входные данные пользователя для регистрации (логин/пароль)
+     * @return - логин пользователя
+     */
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/users")
+    public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserWithRoleDto userDto) {
+        UserResponseDto newUser = authService.createUser(userDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
     }
 }
