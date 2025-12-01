@@ -9,7 +9,6 @@ import org.springframework.stereotype.Repository;
  * Репозиторий для работы с сущностью Author в базе данных.
  * Предоставляет стандартные CRUD-операции через наследование от JpaRepository.
  *
- * @see JpaRepository
  * @see Author
  */
 @Repository

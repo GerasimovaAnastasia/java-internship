@@ -16,11 +16,14 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -30,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
+import org.springframework.web.bind.annotation.RequestMapping;
 import java.util.List;
 
 /**
@@ -40,8 +43,11 @@ import java.util.List;
  * @see Author
  */
 @RestController
+@RequestMapping("/api")
 @RequiredArgsConstructor
 @Validated
+@Tag(name = "Книги", description = "API для управления книгами")
+@SecurityRequirement(name = "JWT")
 public class BookController {
     private final BookService bookService;
 
@@ -91,6 +97,7 @@ public class BookController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
+    @PreAuthorize("hasRole('USER')")
     @GetMapping("/books/search")
     public ResponseEntity<Page<BookResponseDto>> searchBook(@Parameter(description = "Фамилия автора")
                                                                  @RequestParam(required = false) String authorSurname,
@@ -187,6 +194,7 @@ public class BookController {
             @ApiResponse(responseCode = "204", description = "Книга успешно удалена"),
             @ApiResponse(responseCode = "404", description = "Книга не найдена")
     })
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
         bookService.deleteBook(id);
@@ -246,5 +254,4 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBookWithAuthor(@Valid @RequestBody CreateBookWithAuthorDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBookWithAuthor(dto));
     }
-
 }

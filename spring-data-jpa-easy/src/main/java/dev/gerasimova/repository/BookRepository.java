@@ -15,7 +15,6 @@ import java.util.Optional;
  * Репозиторий для работы с сущностью Book в базе данных.
  * Предоставляет стандартные CRUD-операции через наследование от JpaRepository.
  *
- * @see JpaRepository
  * @see Book
  */
 @Repository

@@ -1,0 +1,8 @@
+CREATE TABLE users (
+	id BIGSERIAL NOT NULL,
+	username VARCHAR(255) NOT NULL,
+	password VARCHAR(255) NOT NULL,
+	role VARCHAR(255) NOT NULL,
+	CONSTRAINT users_pk PRIMARY KEY (id),
+	CONSTRAINT users_unique UNIQUE (username)
+);
