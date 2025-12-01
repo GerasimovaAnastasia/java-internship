@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,7 +25,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class UserService implements UserDetailsService {
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
     /**
      * Находит аккаунт пользователя в хранилище по логину.
@@ -52,12 +50,11 @@ public class UserService implements UserDetailsService {
      * @see UserRepository#save(Object)
      */
     @Transactional
-    public UserResponseDto save(CreateUserDto dto) {
+    public UserResponseDto save(CreateUserDto dto, String password) {
         if (userRepository.existsByUsername(dto.username())) {
             throw new UserException("Пользователь с именем '%s' уже существует".formatted(dto.username())
             );
         }
-        String password = passwordEncoder.encode(dto.password());
         User newUser = userMapper.toUser(dto, password, UserRole.ROLE_USER);
         userRepository.save(newUser);
         return userMapper.toUserResponseDto(newUser);

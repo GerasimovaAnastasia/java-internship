@@ -5,7 +5,6 @@ import dev.gerasimova.dto.CreateUserDto;
 import dev.gerasimova.dto.LoginUserDto;
 import dev.gerasimova.dto.UserResponseDto;
 import dev.gerasimova.service.AuthService;
-import dev.gerasimova.service.UserService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,9 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 @Tag(name = "Аутентификация", description = "API для регистрации и входа пользователей")
 public class AuthController {
-    private final UserService userService;
     private final AuthService authService;
-
     /**
      * Endpoint осуществляет регистрацию нового пользователя в системе.
      * @param userDto - входные данные пользователя для регистрации (логин/пароль)
@@ -37,7 +34,7 @@ public class AuthController {
      */
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody CreateUserDto userDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.save(userDto));
+        return ResponseEntity.status(HttpStatus.CREATED).body(authService.register(userDto));
     }
     /**
      * Endpoint осуществляет авторизацию пользователя в системе.
