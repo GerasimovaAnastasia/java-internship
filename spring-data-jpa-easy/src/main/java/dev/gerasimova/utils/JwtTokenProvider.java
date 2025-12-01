@@ -49,6 +49,9 @@ public class JwtTokenProvider {
      * @return true если токен валиден, false в противном случае
      */
     public boolean validateToken(String token) {
+        if (token == null || token.isEmpty()) {
+            throw new IllegalArgumentException("Токен не может быть пустым");
+        }
         try {
             Jwts.parserBuilder()
                     .setSigningKey(secretKey)

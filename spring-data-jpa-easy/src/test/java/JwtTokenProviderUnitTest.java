@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 /**
  * Unit-тесты для JwtTokenProvider без Spring контекста.
  * Проверяет базовую функциональность генерации и валидации JWT токенов.
@@ -60,5 +62,27 @@ class JwtTokenProviderUnitTest {
 
         assertEquals(username, extractedUsername,
                 "Извлеченное имя пользователя должно совпадать с оригиналом");
+    }
+    /**
+     * Проверяет что токен не может быть null.
+     */
+    @Test
+    void testValidateTokenThrowsExceptionForNull() {
+        IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> jwtTokenProvider.validateToken(null)
+        );
+
+        assertEquals("Токен не может быть пустым", exception.getMessage());
+    }
+    /**
+     * Проверяет что токен не может быть пустой строкой.
+     */
+    @Test
+    void testValidateTokenThrowsExceptionForEmptyToken() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> jwtTokenProvider.validateToken("")
+        );
     }
 }
