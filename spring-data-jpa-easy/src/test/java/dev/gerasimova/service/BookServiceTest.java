@@ -1,3 +1,5 @@
+package dev.gerasimova.service;
+
 import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.mapper.AuthorMapper;
 import dev.gerasimova.mapper.BookMapper;
@@ -5,8 +7,6 @@ import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.AuthorRepository;
 import dev.gerasimova.repository.BookRepository;
-import dev.gerasimova.service.AuthorService;
-import dev.gerasimova.service.BookService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

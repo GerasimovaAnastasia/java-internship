@@ -27,20 +27,30 @@ import org.springframework.http.MediaType;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 /**
- * End-to-End тест приложения.
- * Тестирует полный цикл: HTTP запрос -> Контроллер -> Сервис -> Репозиторий -> БД.
- * Использует H2 in-memory базу данных для изоляции тестов.
+ * End-to-End тест приложения с использованием реальной PostgreSQL в Docker.
+ * Testcontainers запускает контейнер с БД на время тестов.
  */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@Testcontainers
 class ApplicationE2ETest {
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
+            .withDatabaseName("book_test_db")
+            .withUsername("test")
+            .withPassword("test");
     @Autowired
     private TestRestTemplate restTemplate;
     @Autowired
@@ -51,6 +61,16 @@ class ApplicationE2ETest {
     private AuthService authService;
     @LocalServerPort
     private int port;
+    @DynamicPropertySource
+    static void configureProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+
+        registry.add("spring.flyway.url", postgres::getJdbcUrl);
+        registry.add("spring.flyway.user", postgres::getUsername);
+        registry.add("spring.flyway.password", postgres::getPassword);
+    }
     @BeforeEach
     void setUp() {
         CreateUserWithRoleDto createUserWithRoleDto = new CreateUserWithRoleDto("admin", "admin", UserRole.ROLE_ADMIN);
