@@ -24,7 +24,7 @@ services:
     depends_on:
       - db
     restart: unless-stopped
-  notification:
+  notification-service:
     image: notification-app:latest
     container_name: notification-container
     ports:
