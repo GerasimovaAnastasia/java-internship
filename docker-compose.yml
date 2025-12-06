@@ -24,5 +24,10 @@ services:
     depends_on:
       - db
     restart: unless-stopped
+  notification:
+    image: notification-app:latest
+    container_name: notification-container
+    ports:
+      - "8081:8080"
 volumes:
   postgres_data:
