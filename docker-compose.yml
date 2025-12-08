@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:14-alpine
+    container_name: db-postgres
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+  app:
+    image: my-app:latest
+    container_name: my-app-container
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    depends_on:
+      - db
+    restart: unless-stopped
+  notification-service:
+    image: notification-app:latest
+    container_name: notification-container
+    ports:
+      - "8081:8080"
+volumes:
+  postgres_data:

@@ -7,6 +7,7 @@ import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.dto.ValidationErrorResponse;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.PaginationParam;
+import dev.gerasimova.dto.BookNotificationRequest;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.service.BookService;
@@ -20,6 +21,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +36,8 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.reactive.function.client.WebClient;
+
 import java.util.List;
 
 /**
@@ -44,13 +48,18 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api")
-@RequiredArgsConstructor
 @Validated
 @Tag(name = "Книги", description = "API для управления книгами")
 @SecurityRequirement(name = "JWT")
 public class BookController {
     private final BookService bookService;
-
+    private final WebClient webClient;
+    public BookController(
+            BookService bookService,
+            @Qualifier("notificationWebClient") WebClient webClient) {
+        this.bookService = bookService;
+        this.webClient = webClient;
+    }
     /**
      * Endpoint для получения книги по id.
      *
@@ -142,7 +151,19 @@ public class BookController {
     })
     @PostMapping("/books")
     public ResponseEntity<BookResponseDto> createBook(@Valid @RequestBody CreateBookDto createBookDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(bookService.saveBook(createBookDto));
+        BookResponseDto dto = bookService.saveBook(createBookDto);
+        BookNotificationRequest request = new BookNotificationRequest(
+                "system",
+                "Создана книга: " + dto.title()
+        );
+
+        webClient.post()
+                .uri("/notify")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(String.class)
+                .subscribe();
+        return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
     /**
      * Метод обновляет данные о книге, находя ее по id.
