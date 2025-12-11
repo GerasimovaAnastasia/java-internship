@@ -1,10 +1,11 @@
 package dev.gerasimova.service;
 
-import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.CreateBookDto;
-import dev.gerasimova.dto.CreateBookWithAuthorDto;
+import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.UpdateBookDto;
+import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.PaginationParam;
+import dev.gerasimova.dto.BookNotificationRequest;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.mapper.AuthorMapper;
@@ -12,8 +13,10 @@ import dev.gerasimova.mapper.BookMapper;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
@@ -21,6 +24,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
+
+import java.net.URI;
 import java.util.List;
 
 /**
@@ -31,13 +37,27 @@ import java.util.List;
  * @see BookRepository
  */
 @Service
-@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BookService {
     private final BookRepository bookRepository;
     private final AuthorService authorService;
     private final BookMapper bookMapper;
     private final AuthorMapper authorMapper;
+    private final DiscoveryClient discoveryClient;
+    private final WebClient webClient;
+
+    public BookService(BookRepository bookRepository,
+                       AuthorService authorService,
+                       BookMapper bookMapper, AuthorMapper authorMapper,
+                       DiscoveryClient discoveryClient, @Qualifier("notificationWebClient") WebClient webClient) {
+        this.bookRepository = bookRepository;
+        this.authorService = authorService;
+        this.bookMapper = bookMapper;
+        this.authorMapper = authorMapper;
+        this.discoveryClient = discoveryClient;
+        this.webClient = webClient;
+    }
+
     @Value("${testTask10}")
     private boolean test;
     /**
@@ -73,6 +93,19 @@ public class BookService {
         Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
+        BookNotificationRequest request = new BookNotificationRequest(
+                "system",
+                "Создана книга: " + dto.title()
+        );
+        List<ServiceInstance> instances = discoveryClient.getInstances("NOTIFICATION-SERVICE");
+        ServiceInstance instance = instances.get(0);
+        URI url = instance.getUri();
+        webClient.post()
+                .uri(url.toString() + "/notify")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(String.class)
+                .subscribe();
         return bookMapper.toBookResponseDto(savedBook);
     }
     /**
