@@ -22,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 
@@ -41,7 +40,7 @@ public class BookService {
     private final AuthorService authorService;
     private final BookMapper bookMapper;
     private final AuthorMapper authorMapper;
-    private final RestTemplate restTemplate;
+    private final NotificationServiceClient notificationServiceClient;
     @Value("${testTask10}")
     private boolean test;
     /**
@@ -81,11 +80,7 @@ public class BookService {
                 "system",
                 "Создана книга: " + savedBook.getTitle()
         );
-        String response = restTemplate.postForObject(
-                "http://NOTIFICATION-SERVICE/notify",
-                request,
-                String.class
-        );
+        String response = notificationServiceClient.sendNotification(request);
         return bookMapper.toBookResponseDto(savedBook);
     }
     /**
