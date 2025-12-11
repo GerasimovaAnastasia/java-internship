@@ -1,5 +1,6 @@
 package dev.gerasimova.config;
 
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -17,6 +18,7 @@ public class RestTemplateConfig {
      * @return настроенный экземпляр RestTemplate
      * @see RestTemplate
      */
+    @LoadBalanced
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
