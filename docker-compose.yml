@@ -1,16 +1,4 @@
 services:
-  eureka-server:
-    build: ./eureka-server
-    container_name: eureka-server-container
-    hostname: eureka-server
-    ports:
-      - "8761:8761"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://eureka-server:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 120s
   db:
     image: postgres:14-alpine
     container_name: db-postgres
@@ -38,20 +26,15 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
     depends_on:
       db:
-        condition: service_healthy
-      eureka-server:
         condition: service_healthy
     restart: unless-stopped
   notification-service:
     build: ./notification-service
     environment:
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
       - SERVER_PORT=8080
-    depends_on:
-      eureka-server:
-        condition: service_healthy
 volumes:
   postgres_data:
