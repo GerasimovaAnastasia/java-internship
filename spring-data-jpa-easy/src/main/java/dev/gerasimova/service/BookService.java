@@ -13,7 +13,9 @@ import dev.gerasimova.mapper.BookMapper;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
 import dev.gerasimova.repository.BookRepository;
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -33,6 +35,7 @@ import java.util.List;
  * @see BookRepository
  */
 @Service
+@Slf4j
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class BookService {
@@ -69,18 +72,23 @@ public class BookService {
      * @return дто сохраненной книги
      * @see BookRepository#save(Object)
      */
-    @Transactional
+    @Transactional(noRollbackFor = FeignException.class)
     public BookResponseDto saveBook(CreateBookDto dto) {
         Author author = authorService.findAuthorById(dto.authorID())
                 .orElseThrow(() -> new AuthorException(dto.authorID()));
         Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
-        BookNotificationRequest request = new BookNotificationRequest(
-                "system",
-                "Создана книга: " + savedBook.getTitle()
-        );
-        String response = notificationServiceClient.sendNotification(request);
+        try {
+            BookNotificationRequest request = new BookNotificationRequest(
+                    "system",
+                    "Создана книга: " + savedBook.getTitle()
+            );
+            String response = notificationServiceClient.sendNotification(request);
+            log.info("Уведомление отправлено: {}", response);
+        } catch (FeignException e) {
+            log.error("Уведомление не отправлено: {}", e.getMessage());
+        }
         return bookMapper.toBookResponseDto(savedBook);
     }
     /**
