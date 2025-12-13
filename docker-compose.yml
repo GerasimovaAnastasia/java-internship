@@ -10,9 +10,15 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     restart: unless-stopped
   app:
-    image: my-app:latest
+    build: ./spring-data-jpa-easy
     container_name: my-app-container
     ports:
       - "8080:8080"
@@ -20,13 +26,15 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     restart: unless-stopped
   notification-service:
-    image: notification-app:latest
-    container_name: notification-container
-    ports:
-      - "8081:8080"
+    build: ./notification-service
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
+      - SERVER_PORT=8080
 volumes:
   postgres_data:
