@@ -1,4 +1,13 @@
 services:
+  gateway:
+    build: ./gateway-service
+    container_name: gateway-container
+    ports:
+      - "8080:8080"
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
+      - SERVER_PORT=8080
+      - SPRING_APPLICATION_NAME=api-gateway
   db:
     image: postgres:14-alpine
     container_name: db-postgres
@@ -19,9 +28,7 @@ services:
     restart: unless-stopped
   book-service:
     build: ./spring-data-jpa-easy
-    container_name: my-app-container
-    ports:
-      - "8080:8080"
+    container_name: book-container
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -35,6 +42,5 @@ services:
     build: ./notification-service
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
-      - SERVER_PORT=8080
 volumes:
   postgres_data:
