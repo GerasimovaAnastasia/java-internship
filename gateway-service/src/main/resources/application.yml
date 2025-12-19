@@ -7,6 +7,11 @@ spring:
 
   cloud:
     gateway:
+      routes:
+        - id: book-service-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/books/**
 
   config:
     import:
