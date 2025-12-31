@@ -22,6 +22,12 @@ spring:
             - Path=/v3/api-docs/**, /swagger-ui/**
           filters:
             - StripPrefix=0
+        - id: library-api-v1
+          uri: lb://BOOK-SERVICE
+          predicates:
+            - Path=/library/v1/books/**
+          filters:
+            - RewritePath=/library/v1/books/(?<segment>.*), /api/books/$\{segment}
   config:
     import:
       optional:
