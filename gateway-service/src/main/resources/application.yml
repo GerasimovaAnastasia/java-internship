@@ -12,11 +12,16 @@ spring:
           enabled: true
           lower-case-service-id: true
       routes:
-        - id: book-service-route
+        - id: book-service-api
           uri: lb://BOOK-SERVICE
           predicates:
             - Path=/api/**
-
+        - id: book-service-route
+          uri: lb://BOOK-SERVICE
+          predicates:
+            - Path=/v3/api-docs/**, /swagger-ui/**
+          filters:
+            - StripPrefix=0
   config:
     import:
       optional:
@@ -43,3 +48,7 @@ management:
       access: read_only
     health:
       show-details: always
+jwt:
+  header: Authorization
+  basic-token-prefix: Bearer
+  secret: 9MJZGQ2TyEzmlNgIwV_Yp0uXEl6BqFJ9Xg7gQ7K9hzS5nAcp-b1ufIe0ftsB1Qsn
