@@ -4,30 +4,50 @@ server:
 spring:
   application:
     name: api-gateway
-
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
-      routes:
-        - id: book-service-api
-          uri: lb://BOOK-SERVICE
-          predicates:
-            - Path=/api/**
-        - id: book-service-route
-          uri: lb://BOOK-SERVICE
-          predicates:
-            - Path=/v3/api-docs/**, /swagger-ui/**
-          filters:
-            - StripPrefix=0
-        - id: library-api-v1
-          uri: lb://BOOK-SERVICE
-          predicates:
-            - Path=/library/v1/books/**
-          filters:
-            - RewritePath=/library/v1/books/(?<segment>.*), /api/books/$\{segment}
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+          routes:
+            - id: login_rate_limiter
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/auth/login
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
+            - id: auth_register
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/auth/register, /book-service/api/auth/users
+              filters:
+                - StripPrefix=1
+            - id: book-service-route
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/v3/api-docs/**, /swagger-ui/**
+              filters:
+                - StripPrefix=0
+            - id: library-api-v1
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/library/v1/books/**
+              filters:
+                - RewritePath=/library/v1/books/(?<segment>.*), /api/books/$\{segment}
+            - id: book-service-api
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/books/**
+              filters:
+                - StripPrefix=1
   config:
     import:
       optional:

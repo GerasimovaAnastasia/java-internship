@@ -21,10 +21,11 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(authz -> authz
                         .pathMatchers(
-                                "/api/auth/**",
+                                "/book-service/api/auth/login",
+                                "/book-service/api/auth/register",
+                                "/book-service/api/auth/users",
                                 "/actuator/health",
                                 "/favicon.ico",
-                                "/book-service/**",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/webjars/**",

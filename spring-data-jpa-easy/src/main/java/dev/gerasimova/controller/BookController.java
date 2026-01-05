@@ -63,7 +63,6 @@ public class BookController {
             )
     })
     @Parameter(name = "id", description = "ID книги", example = "1")
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/books/{id}")
     public ResponseEntity<BookResponseDto> getBookById(@PathVariable Long id) {
         return ResponseEntity.ok(bookService.getBookById(id));
@@ -90,7 +89,6 @@ public class BookController {
                     content = @Content(schema = @Schema(implementation = ErrorResponse.class))
             )
     })
-    @PreAuthorize("hasRole('USER')")
     @GetMapping("/books/search")
     public ResponseEntity<Page<BookResponseDto>> searchBook(@Parameter(description = "Фамилия автора")
                                                                  @RequestParam(required = false) String authorSurname,
@@ -188,7 +186,6 @@ public class BookController {
             @ApiResponse(responseCode = "204", description = "Книга успешно удалена"),
             @ApiResponse(responseCode = "404", description = "Книга не найдена")
     })
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/books/{id}")
     public ResponseEntity<Void> deleteBookById(@PathVariable Long id) {
         bookService.deleteBook(id);

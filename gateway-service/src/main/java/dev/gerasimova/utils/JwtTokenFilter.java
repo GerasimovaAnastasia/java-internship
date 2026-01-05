@@ -84,10 +84,12 @@ public class JwtTokenFilter implements WebFilter {
      * Проверяет, является ли endpoint публичным
      */
     private boolean isPublicEndpoint(String uri) {
-        return uri.startsWith("/book-service/api/auth/") ||
+        return
                 uri.startsWith("/actuator/health") ||
                 uri.startsWith("/actuator/info") ||
-                uri.startsWith("/book-service/") ||
+                uri.startsWith("/book-service/api/auth/login") ||
+                uri.startsWith("/book-service/api/auth/register") ||
+                uri.startsWith("/book-service/api/auth/users") ||
                 uri.startsWith("/v3/api-docs") ||
                 uri.startsWith("/swagger-ui") ||
                 uri.startsWith("/swagger-resources") ||
