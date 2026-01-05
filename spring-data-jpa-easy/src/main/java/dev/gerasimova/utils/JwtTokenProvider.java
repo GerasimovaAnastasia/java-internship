@@ -44,7 +44,7 @@ public class JwtTokenProvider {
                 .compact();
     }
     /**
-     * Проверяет валидность токена
+     * Проверяет валидность токена (для тестов)
      * @param token JWT токен
      * @return true если токен валиден, false в противном случае
      */
@@ -63,7 +63,7 @@ public class JwtTokenProvider {
         }
     }
     /**
-     * Извлекает имя пользователя из JWT токена.
+     * Извлекает имя пользователя из JWT токена. (для тестов)
      *
      * @param token JWT токен
      * @return имя пользователя (subject токена)

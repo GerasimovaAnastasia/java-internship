@@ -1,4 +1,27 @@
+networks:
+  app-network:
+    driver: bridge
+    name: java-intership-network
 services:
+  gateway:
+    build: ./gateway-service
+    container_name: gateway-container
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
+      - SERVER_PORT=8080
+      - SPRING_APPLICATION_NAME=api-gateway
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_REDIS_PASSWORD=password
+      - SPRING_REDIS_DATABASE=0
+      - SPRING_REDIS_TIMEOUT=5000ms
+    depends_on:
+      redis:
+        condition: service_healthy
   db:
     image: postgres:14-alpine
     container_name: db-postgres
@@ -8,6 +31,8 @@ services:
       POSTGRES_PASSWORD: password
     ports:
       - "5432:5432"
+    networks:
+      - app-network
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -17,11 +42,11 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
-  app:
+  book-service:
     build: ./spring-data-jpa-easy
-    container_name: my-app-container
-    ports:
-      - "8080:8080"
+    container_name: book-container
+    networks:
+      - app-network
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/postgres
       - SPRING_DATASOURCE_USERNAME=postgres
@@ -33,8 +58,25 @@ services:
     restart: unless-stopped
   notification-service:
     build: ./notification-service
+    networks:
+      - app-network
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
-      - SERVER_PORT=8080
+  redis:
+    image: redis:7-alpine
+    container_name: redis-container
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    command: redis-server --requirepass password --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "password", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 volumes:
   postgres_data:
+  redis_data:

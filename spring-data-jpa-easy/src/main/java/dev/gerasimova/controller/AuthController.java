@@ -62,7 +62,6 @@ public class AuthController {
      * @param userDto - входные данные пользователя для регистрации (логин/пароль)
      * @return - логин пользователя
      */
-    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/users")
     public ResponseEntity<UserResponseDto> createUser(@Valid @RequestBody CreateUserWithRoleDto userDto) {
         UserResponseDto newUser = authService.createUser(userDto);

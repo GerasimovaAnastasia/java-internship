@@ -6,6 +6,8 @@ services:
     container_name: eureka-server-1
     ports:
       - "8761:8761"
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8761/actuator/health" ]
       interval: 10s
@@ -20,6 +22,8 @@ services:
     container_name: eureka-server-2
     ports:
       - "8762:8762"
+    networks:
+      - app-network
     healthcheck:
       test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider",  "http://localhost:8762/actuator/health" ]
       interval: 10s

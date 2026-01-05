@@ -1,0 +1,80 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false
+          routes:
+            - id: login_rate_limiter
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/auth/login
+              filters:
+                - StripPrefix=1
+                - name: RequestRateLimiter
+                  args:
+                    redis-rate-limiter.replenishRate: 1
+                    redis-rate-limiter.burstCapacity: 60
+                    redis-rate-limiter.requestedTokens: 12
+                    key-resolver: "#{@ipKeyResolver}"
+            - id: auth_register
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/auth/register, /book-service/api/auth/users
+              filters:
+                - StripPrefix=1
+            - id: book-service-route
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/v3/api-docs/**, /swagger-ui/**
+              filters:
+                - StripPrefix=0
+            - id: library-api-v1
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/library/v1/books/**
+              filters:
+                - RewritePath=/library/v1/books/(?<segment>.*), /api/books/$\{segment}
+            - id: book-service-api
+              uri: lb://BOOK-SERVICE
+              predicates:
+                - Path=/book-service/api/books/**
+              filters:
+                - StripPrefix=1
+  config:
+    import:
+      optional:
+      configserver:
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway,routes
+  endpoint:
+    gateway:
+      access: read_only
+    health:
+      show-details: always
+jwt:
+  header: Authorization
+  basic-token-prefix: Bearer
+  secret: 9MJZGQ2TyEzmlNgIwV_Yp0uXEl6BqFJ9Xg7gQ7K9hzS5nAcp-b1ufIe0ftsB1Qsn
