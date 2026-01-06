@@ -1,6 +1,7 @@
 package dev.gerasimova.service;
 
 import dev.gerasimova.dto.CreateBookDto;
+import dev.gerasimova.dto.BookCreatedEvent;
 import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
@@ -22,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +45,10 @@ public class BookService {
     private final AuthorService authorService;
     private final BookMapper bookMapper;
     private final AuthorMapper authorMapper;
-    private final NotificationServiceClient notificationServiceClient;
+    private final KafkaTemplate<String, BookCreatedEvent> kafkaTemplate;
+
+    @Value("${kafka.topics.book-events:book_events}")
+    private String bookEventsTopic;
     @Value("${testTask10}")
     private boolean test;
     /**
@@ -79,15 +84,14 @@ public class BookService {
         Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
+        BookCreatedEvent event = BookCreatedEvent.from(savedBook);
         try {
-            BookNotificationRequest request = new BookNotificationRequest(
-                    "system",
-                    "Создана книга: " + savedBook.getTitle()
-            );
-            String response = notificationServiceClient.sendNotification(request);
-            log.info("Уведомление отправлено: {}", response);
-        } catch (FeignException e) {
-            log.error("Уведомление не отправлено: {}", e.getMessage());
+            kafkaTemplate.send(bookEventsTopic, savedBook.getId().toString(), event);
+            log.info("Событие отправлено в Kafka topic '{}' для книги с  ID: {}",
+                    bookEventsTopic, savedBook.getId());
+        } catch (Exception e) {
+            log.error("Ошибка отправки события в Kafka для книги {}: {}",
+                    savedBook.getId(), e.getMessage());
         }
         return bookMapper.toBookResponseDto(savedBook);
     }
