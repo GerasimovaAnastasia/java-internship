@@ -14,7 +14,8 @@ import java.util.concurrent.CompletableFuture;
 @RequiredArgsConstructor
 public class BookEventConsumer {
     private final NotificationConsumerService notificationConsumerService;
-    @KafkaListener(topics = "book_events")
+    @KafkaListener(topics = "book_events",
+            containerFactory = "dlqKafkaListenerContainerFactory")
     public void handleBookCreatedEvent(BookCreatedEvent event) {
         log.info("Получен BookCreatedEvent: {}", event);
         CompletableFuture<Void> future = notificationConsumerService
