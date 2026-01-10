@@ -1,19 +1,21 @@
 package dev.gerasimova.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.gerasimova.dto.CreateBookDto;
 import dev.gerasimova.dto.BookCreatedEvent;
 import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.PaginationParam;
-import dev.gerasimova.dto.BookNotificationRequest;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.mapper.AuthorMapper;
 import dev.gerasimova.mapper.BookMapper;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
+import dev.gerasimova.model.OutboxEvent;
 import dev.gerasimova.repository.BookRepository;
+import dev.gerasimova.repository.OutboxEventRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +48,8 @@ public class BookService {
     private final BookMapper bookMapper;
     private final AuthorMapper authorMapper;
     private final KafkaTemplate<String, BookCreatedEvent> kafkaTemplate;
-
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
     @Value("${kafka.topics.book-events:book_events}")
     private String bookEventsTopic;
     @Value("${testTask10}")
@@ -86,12 +89,20 @@ public class BookService {
         Book savedBook = bookRepository.save(book);
         BookCreatedEvent event = BookCreatedEvent.from(savedBook);
         try {
-            kafkaTemplate.send(bookEventsTopic, savedBook.getId().toString(), event);
-            log.info("Событие отправлено в Kafka topic '{}' для книги с  ID: {}",
-                    bookEventsTopic, savedBook.getId());
+            String eventJson = objectMapper.writeValueAsString(event);
+
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .book(book)
+                    .eventData(eventJson)
+                    .published(false)
+                    .build();
+
+            outboxEventRepository.save(outboxEvent);
+            log.info("Событие сохранено в outbox с ID: {}", outboxEvent.getId());
+
         } catch (Exception e) {
-            log.error("Ошибка отправки события в Kafka для книги {}: {}",
-                    savedBook.getId(), e.getMessage());
+            log.error("Ошибка при сохранении события в outbox", e);
+
         }
         return bookMapper.toBookResponseDto(savedBook);
     }
