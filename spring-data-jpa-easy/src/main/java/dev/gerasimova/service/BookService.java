@@ -1,27 +1,33 @@
 package dev.gerasimova.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.gerasimova.dto.CreateBookDto;
+import dev.gerasimova.dto.BookCreatedEvent;
 import dev.gerasimova.dto.BookResponseDto;
 import dev.gerasimova.dto.UpdateBookDto;
 import dev.gerasimova.dto.CreateBookWithAuthorDto;
 import dev.gerasimova.dto.PaginationParam;
-import dev.gerasimova.dto.BookNotificationRequest;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.mapper.AuthorMapper;
 import dev.gerasimova.mapper.BookMapper;
 import dev.gerasimova.model.Author;
 import dev.gerasimova.model.Book;
+import dev.gerasimova.model.OutboxEvent;
 import dev.gerasimova.repository.BookRepository;
+import dev.gerasimova.repository.OutboxEventRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,7 +49,11 @@ public class BookService {
     private final AuthorService authorService;
     private final BookMapper bookMapper;
     private final AuthorMapper authorMapper;
-    private final NotificationServiceClient notificationServiceClient;
+    private final KafkaTemplate<String, BookCreatedEvent> kafkaTemplate;
+    private final OutboxEventRepository outboxEventRepository;
+    private final ObjectMapper objectMapper;
+    @Value("${kafka.topics.book-events:book_events}")
+    private String bookEventsTopic;
     @Value("${testTask10}")
     private boolean test;
     /**
@@ -52,7 +62,9 @@ public class BookService {
      * @param id идентификатор книги для поиска
      * @return выводит дто для пользователей с информацией о книге
      */
+    @Cacheable(value = "books", key = "#id")
     public BookResponseDto getBookById(Long id) {
+        log.info("Запрос книги из БД ID: {}", id);
         Book book = findBookById(id);
         return bookMapper.toBookResponseDto(book);
     }
@@ -79,15 +91,22 @@ public class BookService {
         Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
+        BookCreatedEvent event = BookCreatedEvent.from(savedBook);
         try {
-            BookNotificationRequest request = new BookNotificationRequest(
-                    "system",
-                    "Создана книга: " + savedBook.getTitle()
-            );
-            String response = notificationServiceClient.sendNotification(request);
-            log.info("Уведомление отправлено: {}", response);
-        } catch (FeignException e) {
-            log.error("Уведомление не отправлено: {}", e.getMessage());
+            String eventJson = objectMapper.writeValueAsString(event);
+
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .book(book)
+                    .eventData(eventJson)
+                    .published(false)
+                    .build();
+
+            outboxEventRepository.save(outboxEvent);
+            log.info("Событие сохранено в outbox с ID: {}", outboxEvent.getId());
+
+        } catch (Exception e) {
+            log.error("Ошибка при сохранении события в outbox", e);
+
         }
         return bookMapper.toBookResponseDto(savedBook);
     }
@@ -98,6 +117,7 @@ public class BookService {
      * @return дто сохраненной книги
      * @see BookRepository#save(Object)
      */
+    @CacheEvict(value = "books", key = "#id")
     @Transactional
     public BookResponseDto updateBook(UpdateBookDto dto, Long id) {
         Book existingBook = findBookById(id);
@@ -118,6 +138,7 @@ public class BookService {
      * @param id уникальный идентификатор книги для удаления
      * @see BookRepository#delete(Object)
      */
+    @CacheEvict(value = "books", key = "#id")
     @Transactional
     public void deleteBook(Long id) {
         bookRepository.delete(findBookById(id));
