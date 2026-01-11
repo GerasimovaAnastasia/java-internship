@@ -20,6 +20,8 @@ import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.PageImpl;
@@ -60,7 +62,9 @@ public class BookService {
      * @param id идентификатор книги для поиска
      * @return выводит дто для пользователей с информацией о книге
      */
+    @Cacheable(value = "books", key = "#id")
     public BookResponseDto getBookById(Long id) {
+        log.info("Запрос книги из БД ID: {}", id);
         Book book = findBookById(id);
         return bookMapper.toBookResponseDto(book);
     }
@@ -113,6 +117,7 @@ public class BookService {
      * @return дто сохраненной книги
      * @see BookRepository#save(Object)
      */
+    @CacheEvict(value = "books", key = "#id")
     @Transactional
     public BookResponseDto updateBook(UpdateBookDto dto, Long id) {
         Book existingBook = findBookById(id);
@@ -133,6 +138,7 @@ public class BookService {
      * @param id уникальный идентификатор книги для удаления
      * @see BookRepository#delete(Object)
      */
+    @CacheEvict(value = "books", key = "#id")
     @Transactional
     public void deleteBook(Long id) {
         bookRepository.delete(findBookById(id));
