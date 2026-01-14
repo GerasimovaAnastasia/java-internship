@@ -55,8 +55,7 @@ services:
       - SPRING_DATA_REDIS_DATABASE=0
       - SPRING_DATA_REDIS_TIMEOUT=5000ms
     depends_on:
-      redis:
-        condition: service_healthy
+      - redis
   db:
     image: postgres:14-alpine
     container_name: db-postgres
@@ -77,6 +76,15 @@ services:
       retries: 5
       start_period: 30s
     restart: unless-stopped
+  config-server:
+    build: ./config-server
+    container_name: config-server
+    ports:
+      - "8888:8888"
+    environment:
+      - GIT_URI=${CONFIG_GIT_URI:-https://github.com/GerasimovaAnastasia/config-repo.git}
+    networks:
+      - app-network
   book-service:
     build: ./spring-data-jpa-easy
     container_name: book-container
@@ -95,9 +103,12 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=password
       - SPRING_DATA_REDIS_DATABASE=0
       - SPRING_DATA_REDIS_TIMEOUT=5000ms
+      - CONFIG_SERVER_URI=http://config-server:8888
     depends_on:
       - db
       - kafka
+      - config-server
+      - gateway
     restart: unless-stopped
   mongodb:
     image: mongo:latest
@@ -132,9 +143,12 @@ services:
       - SPRING_KAFKA_LISTENER_ACK-MODE=record
       - SPRING_KAFKA_PROPERTIES_MAX_POLL_INTERVAL_MS=300000
       - SPRING_KAFKA_PROPERTIES_REQUEST_TIMEOUT_MS=30000
+      - CONFIG_SERVER_URI=http://config-server:8888
     depends_on:
       - kafka
       - mongodb
+      - config-server
+      - gateway
   redis:
     image: redis:7-alpine
     container_name: redis-container
