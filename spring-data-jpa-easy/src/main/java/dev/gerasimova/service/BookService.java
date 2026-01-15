@@ -55,7 +55,7 @@ public class BookService {
     @Value("${kafka.topics.book-events:book_events}")
     private String bookEventsTopic;
     @Value("${testTask10}")
-    private boolean test;
+    private Boolean testTask10;
     /**
      * Находит книгу по идентификатору.
      *
@@ -212,7 +212,8 @@ public class BookService {
             throw new AuthorException("Автор уже существует: " + dto.authorName() + " " + dto.authorSurname());
         }
         Author saveAuthor = authorService.saveAuthor(authorMapper.toAuthor(dto));
-        if (test) {
+        log.info("testTask10 updated: {}", testTask10);
+        if (testTask10) {
             throw new RuntimeException("Тест отката транзакции!");
         }
         Book book = Book.builder()

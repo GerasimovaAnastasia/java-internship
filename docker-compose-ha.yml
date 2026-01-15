@@ -13,10 +13,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 60s
     environment:
       - SERVER_PORT=8761
+      - EUREKA_INSTANCE_HOSTNAME=eureka1
+      - EUREKA_INSTANCE_PREFERIPADDRESS=false
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka2:8762/eureka/
+      - LOGGING_LEVEL_COM_NETFLIX_EUREKA=DEBUG
+      - LOGGING_LEVEL_COM_NETFLIX_DISCOVERY=DEBUG
   eureka2:
     build: ./eureka-server
     container_name: eureka-server-2
@@ -29,7 +35,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 10
-      start_period: 30s
+      start_period: 60s
     environment:
       - SERVER_PORT=8762
+      - EUREKA_INSTANCE_HOSTNAME=eureka2
+      - EUREKA_INSTANCE_PREFERIPADDRESS=false
+      - EUREKA_CLIENT_REGISTERWITHEUREKA=true
+      - EUREKA_CLIENT_FETCHREGISTRY=true
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/
+      - LOGGING_LEVEL_COM_NETFLIX_EUREKA=DEBUG
+      - LOGGING_LEVEL_COM_NETFLIX_DISCOVERY=DEBUG

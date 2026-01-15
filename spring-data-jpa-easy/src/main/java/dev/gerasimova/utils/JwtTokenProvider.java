@@ -5,7 +5,12 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -17,15 +22,28 @@ import java.util.Date;
  * @see Jwts
  */
 @Component
+@RefreshScope
+@Slf4j
 public class JwtTokenProvider {
     private final SecretKey secretKey;
-    private final long expirationMs;
+    @Value("${jwt.expiration}")
+    private Long expirationMs;
 
     public JwtTokenProvider(
-            @Value("${jwt.secret}") String secret,
-            @Value("${jwt.expiration}") long expirationMs) {
+            @Value("${jwt.secret}") String secret) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
-        this.expirationMs = expirationMs;
+    }
+    @PostConstruct
+    public void init() {
+        log.info("JwtTokenProvider инициализирован с expirationMs = {} ms ({} minutes)",
+                expirationMs, expirationMs / 60000);
+    }
+
+    @EventListener(RefreshScopeRefreshedEvent.class)
+    public void onRefresh(RefreshScopeRefreshedEvent event) {
+
+        log.info("JWT expiration изменен на: {} ms ({} minutes)",
+                expirationMs, expirationMs / 60000);
     }
     /**
      * Генерирует JWT токен для пользователя
