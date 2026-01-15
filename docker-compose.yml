@@ -15,6 +15,12 @@ services:
       - app-network
     volumes:
       - zookeeper-data:/var/lib/zookeeper/data
+    healthcheck:
+      test: [ "CMD", "nc", "-z", "localhost", "2181" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
   kafka:
     image: confluentinc/cp-kafka:7.4.0
     container_name: kafka
@@ -38,6 +44,12 @@ services:
       - app-network
     volumes:
       - kafka-data:/var/lib/kafka/data
+    healthcheck:
+      test: [ "CMD", "kafka-topics", "--list", "--bootstrap-server", "localhost:9092" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
   gateway:
     build: ./gateway-service
     container_name: gateway-container
@@ -54,6 +66,12 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=password
       - SPRING_DATA_REDIS_DATABASE=0
       - SPRING_DATA_REDIS_TIMEOUT=5000ms
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
     depends_on:
       - redis
   db:
@@ -83,8 +101,15 @@ services:
       - "8888:8888"
     environment:
       - GIT_URI=${CONFIG_GIT_URI:-https://github.com/GerasimovaAnastasia/config-repo.git}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
   book-service:
     build: ./spring-data-jpa-easy
     container_name: book-container
@@ -95,6 +120,7 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=password
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - SPRING_KAFKA_PRODUCER_KEY_SERIALIZER=org.apache.kafka.common.serialization.StringSerializer
       - SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER=org.springframework.kafka.support.serializer.JsonSerializer
@@ -103,7 +129,6 @@ services:
       - SPRING_DATA_REDIS_PASSWORD=password
       - SPRING_DATA_REDIS_DATABASE=0
       - SPRING_DATA_REDIS_TIMEOUT=5000ms
-      - CONFIG_SERVER_URI=http://config-server:8888
     depends_on:
       - db
       - kafka
@@ -129,6 +154,7 @@ services:
       - app-network
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka1:8761/eureka/,http://eureka2:8762/eureka/
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=true
       - SPRING_KAFKA_CONSUMER_GROUP_ID=notification-group
       - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER=org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
@@ -143,7 +169,6 @@ services:
       - SPRING_KAFKA_LISTENER_ACK-MODE=record
       - SPRING_KAFKA_PROPERTIES_MAX_POLL_INTERVAL_MS=300000
       - SPRING_KAFKA_PROPERTIES_REQUEST_TIMEOUT_MS=30000
-      - CONFIG_SERVER_URI=http://config-server:8888
     depends_on:
       - kafka
       - mongodb
