@@ -24,8 +24,7 @@ class JwtTokenProviderUnitTest {
     @BeforeEach
     void setUp() {
         jwtTokenProvider = new JwtTokenProvider(
-                "testSecretKey1234567890123456789012",
-                900000
+                "testSecretKey1234567890123456789012"
         );
     }
     /**
