@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
@@ -21,11 +22,12 @@ import java.util.Date;
  *
  * @see Jwts
  */
-@Component
 @RefreshScope
+@Component
 @Slf4j
 public class JwtTokenProvider {
     private final SecretKey secretKey;
+    @Getter
     @Value("${jwt.expiration}")
     private Long expirationMs;
 
@@ -95,4 +97,5 @@ public class JwtTokenProvider {
                 .getBody();
         return claims.getSubject();
     }
+
 }
