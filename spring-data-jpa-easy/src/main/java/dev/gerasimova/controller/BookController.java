@@ -245,4 +245,11 @@ public class BookController {
     public ResponseEntity<BookResponseDto> createBookWithAuthor(@Valid @RequestBody CreateBookWithAuthorDto dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(bookService.createBookWithAuthor(dto));
     }
+    @Operation( summary = "Отправка уведомлений",
+            description = "Тестовый метод для проверки работы предохранителя.")
+    @GetMapping("/books/send")
+    public ResponseEntity<String> sendNotifications() {
+        bookService.sendNotifications();
+        return ResponseEntity.ok("Команда на отправку уведомления выполнена");
+    }
 }

@@ -1,12 +1,7 @@
 package dev.gerasimova.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.gerasimova.dto.CreateBookDto;
-import dev.gerasimova.dto.BookCreatedEvent;
-import dev.gerasimova.dto.BookResponseDto;
-import dev.gerasimova.dto.UpdateBookDto;
-import dev.gerasimova.dto.CreateBookWithAuthorDto;
-import dev.gerasimova.dto.PaginationParam;
+import dev.gerasimova.dto.*;
 import dev.gerasimova.exception.AuthorException;
 import dev.gerasimova.exception.BookException;
 import dev.gerasimova.mapper.AuthorMapper;
@@ -17,6 +12,7 @@ import dev.gerasimova.model.OutboxEvent;
 import dev.gerasimova.repository.BookRepository;
 import dev.gerasimova.repository.OutboxEventRepository;
 import feign.FeignException;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -52,6 +48,7 @@ public class BookService {
     private final KafkaTemplate<String, BookCreatedEvent> kafkaTemplate;
     private final OutboxEventRepository outboxEventRepository;
     private final ObjectMapper objectMapper;
+    private final NotificationServiceClient notificationServiceClient;
     @Value("${kafka.topics.book-events:book_events}")
     private String bookEventsTopic;
     @Value("${testTask10}")
@@ -288,5 +285,20 @@ public class BookService {
             }
         }
         return Sort.by(sort);
+    }
+
+    /**
+     * Тестовый метод отправки уведомлений для проверки работы предохранителя.
+     */
+    @CircuitBreaker(name = "notificationService")
+    public void sendNotifications() {
+
+        BookNotificationRequest request = new BookNotificationRequest(
+                "system",
+                "Уведомление о создании книги"
+        );
+        String response = notificationServiceClient.sendNotification(request);
+        log.info("Уведомление отправлено: {}", response);
+
     }
 }
