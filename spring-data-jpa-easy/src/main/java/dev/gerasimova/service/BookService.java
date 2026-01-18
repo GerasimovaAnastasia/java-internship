@@ -290,7 +290,7 @@ public class BookService {
     /**
      * Тестовый метод отправки уведомлений для проверки работы предохранителя.
      */
-    @CircuitBreaker(name = "notificationService")
+    @CircuitBreaker(name = "notificationService", fallbackMethod = "myFallbackMethod")
     public void sendNotifications() {
 
         BookNotificationRequest request = new BookNotificationRequest(
@@ -299,6 +299,8 @@ public class BookService {
         );
         String response = notificationServiceClient.sendNotification(request);
         log.info("Уведомление отправлено: {}", response);
-
+    }
+    private void myFallbackMethod(Exception e) {
+        log.error("Circuit Breaker: Уведомление не отправлено: {}", e.getMessage());
     }
 }

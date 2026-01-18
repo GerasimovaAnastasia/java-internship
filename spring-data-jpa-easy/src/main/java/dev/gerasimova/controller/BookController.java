@@ -250,6 +250,6 @@ public class BookController {
     @GetMapping("/books/send")
     public ResponseEntity<String> sendNotifications() {
         bookService.sendNotifications();
-        return ResponseEntity.ok("Команда на отправку уведомления выполнена");
+        return ResponseEntity.ok("Метод отправки уведомлений работает корректно");
     }
 }
