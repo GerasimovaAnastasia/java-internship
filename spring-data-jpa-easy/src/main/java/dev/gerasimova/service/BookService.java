@@ -13,6 +13,7 @@ import dev.gerasimova.repository.BookRepository;
 import dev.gerasimova.repository.OutboxEventRepository;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -88,23 +89,10 @@ public class BookService {
         Book book = bookMapper.toBook(dto);
         book.setAuthor(author);
         Book savedBook = bookRepository.save(book);
-        BookCreatedEvent event = BookCreatedEvent.from(savedBook);
-        try {
-            String eventJson = objectMapper.writeValueAsString(event);
 
-            OutboxEvent outboxEvent = OutboxEvent.builder()
-                    .book(book)
-                    .eventData(eventJson)
-                    .published(false)
-                    .build();
+        saveToOutbox(savedBook);
+        sendBookCreationNotification(savedBook);
 
-            outboxEventRepository.save(outboxEvent);
-            log.info("Событие сохранено в outbox с ID: {}", outboxEvent.getId());
-
-        } catch (Exception e) {
-            log.error("Ошибка при сохранении события в outbox", e);
-
-        }
         return bookMapper.toBookResponseDto(savedBook);
     }
     /**
@@ -291,16 +279,42 @@ public class BookService {
      * Тестовый метод отправки уведомлений для проверки работы предохранителя.
      */
     @CircuitBreaker(name = "notificationService", fallbackMethod = "myFallbackMethod")
-    public void sendNotifications() {
+    @Retry(name = "notificationService")
+    public void sendBookCreationNotification(Book savedBook) {
 
         BookNotificationRequest request = new BookNotificationRequest(
                 "system",
-                "Уведомление о создании книги"
+                "Уведомление о создании книги: " + savedBook.getTitle()
         );
         String response = notificationServiceClient.sendNotification(request);
         log.info("Уведомление отправлено: {}", response);
     }
     private void myFallbackMethod(Exception e) {
         log.error("Circuit Breaker: Уведомление не отправлено: {}", e.getMessage());
+    }
+
+    /**
+     * Метод для отправки события в Кафку
+     * @param savedBook - книга, уведомления о создании которой отправляются в Кафка.
+     */
+    private void saveToOutbox(Book savedBook) {
+        BookCreatedEvent event = BookCreatedEvent.from(savedBook);
+        try {
+            String eventJson = objectMapper.writeValueAsString(event);
+
+            OutboxEvent outboxEvent = OutboxEvent.builder()
+                    .book(savedBook)
+                    .eventData(eventJson)
+                    .published(false)
+                    .build();
+
+            outboxEventRepository.save(outboxEvent);
+            log.info("Событие сохранено в outbox с ID: {}", outboxEvent.getId());
+
+        } catch (Exception e) {
+            log.error("Ошибка при сохранении события в outbox", e);
+
+        }
+
     }
 }
