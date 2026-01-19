@@ -13,6 +13,7 @@ import dev.gerasimova.repository.BookRepository;
 import dev.gerasimova.repository.OutboxEventRepository;
 import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -280,6 +281,7 @@ public class BookService {
      */
     @CircuitBreaker(name = "notificationService", fallbackMethod = "myFallbackMethod")
     @Retry(name = "notificationService")
+    @RateLimiter(name = "notificationService")
     public void sendBookCreationNotification(Book savedBook) {
 
         BookNotificationRequest request = new BookNotificationRequest(
