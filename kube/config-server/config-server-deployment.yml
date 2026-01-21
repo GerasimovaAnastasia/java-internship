@@ -1,28 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: eureka
+  name: config-server
   labels:
-    app: eureka
+    app: config-server
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: eureka
+      app: config-server
   template:
     metadata:
       labels:
-        app: eureka
+        app: config-server
     spec:
       containers:
-        - name: eureka-server
-          image: eureka-server:latest
+        - env:
+            - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+              value: http://eureka:8761/eureka/
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: kafka:9092
+          name: config-server
+          image: config-server:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8761
-          volumeMounts:
-            - name: eureka-config
-              mountPath: /config
+            - containerPort: 8888
           resources:
             requests:
               memory: "128Mi"
@@ -30,7 +32,4 @@ spec:
             limits:
               memory: "256Mi"
               cpu: "250m"
-      volumes:
-        - name: eureka-config
-          configMap:
-            name: eureka-config
+
