@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: eureka-config
+  labels:
+    app: eureka-server
+data:
+  application.yml: |
+    server:
+      port: 8761
+
+    eureka:
+      client:
+        register-with-eureka: false
+        fetch-registry: false
+        service-url:
+          defaultZone: http://eureka:8761/eureka/
+
+    spring:
+      application:
+        name: eureka-server

@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-config
+  labels:
+    app: notification-service
+data:
+  application.yml: |
+    eureka:
+      client:
+        register-with-eureka: true
+        fetch-registry: true
+        service-url:
+          defaultZone: http://eureka:8761/eureka/
+
+    spring:
+      application:
+        name: notification-service
+      cloud:
+        config:
+          discovery:
+            enabled: true
+            service-id: config-server
