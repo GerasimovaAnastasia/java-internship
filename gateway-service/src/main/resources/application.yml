@@ -55,6 +55,14 @@ spring:
                     statusCodes:
                       - 500
                       - 503
+                - name: Retry
+                  args:
+                    retries: 3
+                    statuses:
+                      - SERVICE_UNAVAILABLE
+                      - INTERNAL_SERVER_ERROR
+                    methods:
+                      - POST, PUT, DELETE
   config:
     import:
       optional:
