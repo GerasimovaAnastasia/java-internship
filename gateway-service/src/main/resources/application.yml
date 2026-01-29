@@ -36,33 +36,12 @@ spring:
                 - Path=/v3/api-docs/**, /swagger-ui/**
               filters:
                 - StripPrefix=0
-            - id: library-api-v1
-              uri: lb://BOOK-SERVICE
-              predicates:
-                - Path=/library/v1/books/**
-              filters:
-                - RewritePath=/library/v1/books/(?<segment>.*), /api/books/$\{segment}
             - id: book-service-api
               uri: lb://BOOK-SERVICE
               predicates:
                 - Path=/book-service/api/books/**
               filters:
                 - StripPrefix=1
-                - name: CircuitBreaker
-                  args:
-                    name: bookServiceBreaker
-                    fallbackUri: forward:/fallback/book-service
-                    statusCodes:
-                      - 500
-                      - 503
-                - name: Retry
-                  args:
-                    retries: 3
-                    statuses:
-                      - SERVICE_UNAVAILABLE
-                      - INTERNAL_SERVER_ERROR
-                    methods:
-                      - POST, PUT, DELETE
   config:
     import:
       optional:
@@ -104,6 +83,3 @@ resilience4j:
         permittedNumberOfCallsInHalfOpenState: 3
         slidingWindowType: COUNT_BASED
         automaticTransitionFromOpenToHalfOpenEnabled: true
-  instances:
-    bookServiceBreaker:
-      baseConfig: default

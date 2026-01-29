@@ -1,5 +1,6 @@
-package dev.gerasimova.utils;
+package dev.gerasimova.filter;
 
+import dev.gerasimova.utils.JwtTokenProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
