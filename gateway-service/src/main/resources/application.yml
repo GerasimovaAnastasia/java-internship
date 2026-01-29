@@ -48,6 +48,13 @@ spring:
                 - Path=/book-service/api/books/**
               filters:
                 - StripPrefix=1
+                - name: CircuitBreaker
+                  args:
+                    name: bookServiceBreaker
+                    fallbackUri: forward:/fallback/book-service
+                    statusCodes:
+                      - 500
+                      - 503
   config:
     import:
       optional:
@@ -78,3 +85,17 @@ jwt:
   header: Authorization
   basic-token-prefix: Bearer
   secret: 9MJZGQ2TyEzmlNgIwV_Yp0uXEl6BqFJ9Xg7gQ7K9hzS5nAcp-b1ufIe0ftsB1Qsn
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+  instances:
+    bookServiceBreaker:
+      baseConfig: default
