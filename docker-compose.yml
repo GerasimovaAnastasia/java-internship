@@ -194,6 +194,13 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - app-network
 volumes:
   postgres_data:
   redis_data:
