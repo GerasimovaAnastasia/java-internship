@@ -23,7 +23,7 @@ public class SecurityConfig {
                                 "/book-service/api/auth/login",
                                 "/book-service/api/auth/register",
                                 "/book-service/api/auth/users",
-                                "/actuator/health",
+                                "/actuator/**",
                                 "/favicon.ico",
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
