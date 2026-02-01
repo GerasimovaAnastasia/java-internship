@@ -1,5 +1,6 @@
-package dev.gerasimova.utils;
+package dev.gerasimova.filter;
 
+import dev.gerasimova.utils.JwtTokenProvider;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -85,8 +86,7 @@ public class JwtTokenFilter implements WebFilter {
      */
     private boolean isPublicEndpoint(String uri) {
         return
-                uri.startsWith("/actuator/health") ||
-                uri.startsWith("/actuator/info") ||
+                uri.startsWith("/actuator") ||
                 uri.startsWith("/book-service/api/auth/login") ||
                 uri.startsWith("/book-service/api/auth/register") ||
                 uri.startsWith("/book-service/api/auth/users") ||
